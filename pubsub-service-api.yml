@@ -1,0 +1,466 @@
+openapi: "3.0.2"
+info:
+  title: "Libp2p Pubsub service API"
+  version: "1.0.0"
+  description: "
+  
+## Goals
+
+- mobile, bad network (NAT ..), battery, performance, latency
+- async, buffer messages, support intermittent connections
+- versioned API
+  "
+
+servers:
+  - url: https://pubsub-service.example.com/v1
+
+paths:
+  /discovery:
+    get:
+      summary: Describe the service configuration and limits
+      description: "Describe the service configuration and limits.
+      
+      This endpoint returns the maximum acceptable settings that a client can ask for regarding a pubsub topic."
+      responses:
+        "200":
+          description: "Returns the service configuration"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscoveryResponse"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/InsufficientFunds'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '4XX':
+          $ref: '#/components/responses/CustomServiceError'
+        '5XX':
+          $ref: '#/components/responses/InternalServerError'
+
+  /join:
+    post:
+      # NOTE: choice is to accept the join immediately and process it later, for fast ACK to mobile device.
+      summary: Subscribe to a pubsub topic
+      description: "Subscribe to a pubsub topic.
+      
+      The client can define configuration for that topic (queue length, timeout...). Those configuration can be restricted by the server to conform to the server capability (see /discovery). The effective configuration is returned as part of the response.
+      
+      Join is only effective for some duration, defined by the previously described process. In order to keep listening to that topic, the client should perform a /join again before expiration, to signal liveliness. This operation is idempotent if the given parameters result in the same configuration, but a different operation should be effective and drop messages if necessary.
+      
+      Note that subscription is not an instantaneous operation and can happen after this request returns. It may take some time before the subscription is processed and effective in the server."
+      parameters:
+        - $ref: "#/components/parameters/topic"
+        - $ref: '#/components/parameters/queue-length'
+        - $ref: '#/components/parameters/queue-policy'
+        - $ref: '#/components/parameters/timeout'
+        - $ref: '#/components/parameters/max-message-size'
+      responses:
+        "202":
+          description: "Join accepted. The service will proceed and start to listen."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JoinResponse"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/InsufficientFunds'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '4XX':
+          $ref: '#/components/responses/CustomServiceError'
+        '5XX':
+          $ref: '#/components/responses/InternalServerError'
+  /leave:
+    post:
+      summary: Unsubscribe from a pubsub topic
+      description: Unsubscribe from a pubsub topic, and destroy any stored message for that topic.
+      parameters:
+        - $ref: "#/components/parameters/topic"
+      responses:
+        "200":
+          description: "Leave is effective"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+          description: "topic not found"
+        '409':
+          $ref: '#/components/responses/InsufficientFunds'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '4XX':
+          $ref: '#/components/responses/CustomServiceError'
+        '5XX':
+          $ref: '#/components/responses/InternalServerError'
+  /publish:
+    post:
+      summary: Publish a message in a pubsub topic
+      parameters:
+        - $ref: '#/components/parameters/topic'
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: "OK"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+          description: "topic not found"
+        '409':
+          $ref: '#/components/responses/InsufficientFunds'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '4XX':
+          $ref: '#/components/responses/CustomServiceError'
+        '5XX':
+          $ref: '#/components/responses/InternalServerError'
+  /read:
+    get:
+      summary: Read message from a pubsub topic
+      parameters:
+        - $ref: '#/components/parameters/topic'
+#        - $ref: '#/components/parameters/'
+      responses:
+        "200":
+          description: "OK"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+          description: "topic not found"
+        '409':
+          $ref: '#/components/responses/InsufficientFunds'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '4XX':
+          $ref: '#/components/responses/CustomServiceError'
+        '5XX':
+          $ref: '#/components/responses/InternalServerError'
+  /list:
+    get:
+      summary: List subscribed topics
+      parameters: []
+      responses:
+        "200":
+          description: "OK"
+
+components:
+  schemas:
+    # Note, each config is optional, as the service can opt-in to not have limits
+    DiscoveryResponse:
+      description: Response for /discovery
+      type: object
+      properties:
+        queue-length:
+          description: The maximum number of pubsub message stored by the service.
+          type: integer
+          format: int32
+          minimum: 1
+          example: 10
+        queue-policy:
+          description: What happens when the number of pubsub message stored by the service fills up
+          type: string
+          enum:
+            - drop-old
+            - drop-new
+          example: drop-old
+        timeout:
+          description: The maximum lifetime during which a pubsub topic is subscribed to after a /join, in seconds.
+          type: integer
+          format: int32
+          minimum: 1
+          example: 600
+        max-message-size:
+          description: The maximum size of a single pubsub message, in byte.
+          type: integer
+          format: int32
+          minimum: 1
+          example: 100000
+        maximum-topic:
+          description: The maximum number of pubsub topic subscribed to by a client.
+          type: integer
+          format: int32
+          minimum: 1
+          example: 200
+
+    JoinResponse:
+      description: Response for /join
+      type: object
+      required:
+        - queue-length
+        - queue-policy
+        - timeout
+        - max-message-size
+      properties:
+        queue-length:
+          description: The maximum number of pubsub message stored by the service.
+          type: integer
+          format: int32
+          minimum: 1
+          example: 10
+        queue-policy:
+          description: What happens when the number of pubsub message stored by the service fills up
+          type: string
+          enum:
+            - drop-old
+            - drop-new
+          example: drop-old
+        timeout:
+          description: The maximum lifetime during which a pubsub topic is subscribed to after a /join, in seconds.
+          type: integer
+          format: int32
+          minimum: 1
+          example: 600
+        max-message-size:
+          description: The maximum size of a single pubsub message, in byte.
+          type: integer
+          format: int32
+          minimum: 1
+          example: 100000
+
+    Failure:
+      description: Response for a failed request
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - reason
+          properties:
+            reason:
+              type: string
+              description: Mandatory string identifying the type of error
+              example: "ERROR_CODE_FOR_MACHINES"
+            details:
+              type: string
+              description: Optional, longer description of the error; may include UUID of transaction for support, links to documentation etc
+              example: "Optional explanation for humans with more details"
+
+  parameters:
+    topic:
+      description: The name of a pubsub topic
+      name: topic
+      in: query
+      required: true
+      schema:
+        type: string
+      example: "foo"
+
+    queue-length:
+      description: The maximum number of pubsub message stored by the service.
+      name: queue-length
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+      example: 20
+
+
+    queue-policy:
+      description: What happens when the number of pubsub message stored by the service fills up
+      name: queue-policy
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - drop-old
+          - drop-new
+      example: drop-old
+
+    timeout:
+      description: The maximum lifetime during which a pubsub topic is subscribed to after a /join, in seconds.
+      name: timeout
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 600
+      example: 600
+
+    max-message-size:
+      description: The maximum length in byte for a pubsub message.
+      name: max-message-size
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 12345 # TODO
+      example: 100000
+
+  responses:
+    TooManyTopic:
+      description: Error response (Too many topics; the limit of number of subscribed topic by a client was reached)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Failure'
+          examples:
+            BadRequestExample:
+              $ref: '#/components/examples/TooManyTopicExample'
+
+    MessageTooBig:
+      description: Error response (Message too big; the given message size exceed the service limits)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Failure'
+          examples:
+            BadRequestExample:
+              $ref: '#/components/examples/MessageTooBigExample'
+
+    BadRequest:
+      description: Error response (Bad request)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Failure'
+          examples:
+            BadRequestExample:
+              $ref: '#/components/examples/BadRequestExample'
+
+    Unauthorized:
+      description: Error response (Unauthorized; access token is missing or invalid)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Failure'
+          examples:
+            UnauthorizedExample:
+              $ref: '#/components/examples/UnauthorizedExample'
+
+    NotFound:
+      description: Error response (The specified resource was not found)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Failure'
+          examples:
+            NotFoundExample:
+              $ref: '#/components/examples/NotFoundExample'
+
+    InsufficientFunds:
+      description: Error response (Insufficient funds)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Failure'
+          examples:
+            InsufficientFundsExample:
+              $ref: '#/components/examples/InsufficientFundsExample'
+
+    TooManyRequests:
+      description: Error response (Too many requests; rate limiting)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Failure"
+          examples:
+            TooManyRequestsExample:
+              $ref: "#/components/examples/TooManyRequestsExample"
+
+    CustomServiceError:
+      description: Error response (Custom service error)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Failure'
+          examples:
+            CustomServiceErrorExample:
+              $ref: '#/components/examples/CustomServiceErrorExample'
+
+    InternalServerError:
+      description: Error response (Unexpected internal server error)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Failure'
+          examples:
+            InternalServerErrorExample:
+              $ref: '#/components/examples/InternalServerErrorExample'
+
+  examples:
+    TooManyTopicExample:
+      value:
+        error:
+          reason: "TOO_MANY_TOPIC"
+          details: "Too many topic are already subscribed"
+      summary: Response when too many topics are already subscribed and the service refuse to subscribe to a new one
+
+    MessageTooBigExample:
+      value:
+        error:
+          reason: "MESSAGE_TOO_BIG"
+          details: "The message is too big"
+      summary: Response when the client ask to send a message that is too big for the topic configured limit.
+
+    BadRequestExample:
+      value:
+        error:
+          reason: "BAD_REQUEST"
+          details: "Explanation for humans with more details"
+      summary: A sample response to a bad request; reason will differ
+
+    UnauthorizedExample:
+      value:
+        error:
+          reason: "UNAUTHORIZED"
+          details: "Access token is missing or invalid"
+      summary: Response to an unauthorized request
+
+    NotFoundExample:
+      value:
+        error:
+          reason: "NOT_FOUND"
+          details: "The specified resource was not found"
+      summary: Response to a request for a resource that does not exist
+
+    InsufficientFundsExample:
+      value:
+        error:
+          reason: "INSUFFICIENT_FUNDS"
+          details: "Unable to process request due to the lack of funds"
+      summary: Response when access token run out of funds
+
+    #TODO: Retry-After ? as header?
+    TooManyRequestsExample:
+      value:
+        error:
+          reason: "TOO_MANY_REQUESTS"
+          details: "Request denied due to too many requests sent to the server"
+
+    CustomServiceErrorExample:
+      value:
+        error:
+          reason: "CUSTOM_ERROR_CODE_FOR_MACHINES"
+          details: "Optional explanation for humans with more details"
+      summary: Response when a custom error occurred
+
+    InternalServerErrorExample:
+      value:
+        error:
+          reason: "INTERNAL_SERVER_ERROR"
+          details: "Explanation for humans with more details"
+      summary: Response when unexpected error occurred
