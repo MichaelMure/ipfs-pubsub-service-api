@@ -1,14 +1,24 @@
 openapi: "3.0.2"
 info:
-  title: "Libp2p Pubsub service API"
+  title: "Pubsub service API"
   version: "1.0.0"
   description: "
   
-## Goals
+## Goal
 
-- mobile, bad network (NAT ..), battery, performance, latency
-- async, buffer messages, support intermittent connections
-- versioned API
+Goal is to be able to use pubsub on any device and condition to build decentralized application. Powerful and well connected machine can use pubsub directly, but different reasons can make that difficult. Notable one are mobile devices, bad networking (NAT, ...), battery life, available compute or application lifespan.
+
+This API allow to delegate to a more powerful instance or a service provider this role of interacting with pubsub. As this API is asynchronous at its core, it allows to instruct that provider to listen to topics, sleep, and come back later to retrieve messages. 
+
+## Design principles:
+
+- effort is made to allow client to operate with the minimum of requests, and within a limited time window. An example of that is /join that returns before the topic is actually subscribed and ready.
+- as the real world as shown, there is a gradient of necessary validation of received message, ranging from generic or protocol layer (ex:  deduplicate messages, max message size) to application specific (non-conforming message, abuse ...). All of those would usually be doone in the same place if the application directly perform pubsub, but this is not the case here. The choice here is to split those into server side (the generic part, including some form of spam prevention) and the client side (anything that require specific logic or data), and have a way for the client to hint the server about those bad message or PeerID.
+- provide a versioned API from the start
+
+## Expected usage pattern
+
+
   "
 
 servers:
@@ -43,7 +53,6 @@ paths:
 
   /join:
     post:
-      # NOTE: choice is to accept the join immediately and process it later, for fast ACK to mobile device.
       summary: Subscribe to a pubsub topic
       description: "Subscribe to a pubsub topic.
       
@@ -77,6 +86,7 @@ paths:
           $ref: '#/components/responses/CustomServiceError'
         '5XX':
           $ref: '#/components/responses/InternalServerError'
+
   /leave:
     post:
       summary: Unsubscribe from a pubsub topic
@@ -91,8 +101,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
-          $ref: '#/components/responses/NotFound'
-          description: "topic not found"
+          $ref: '#/components/responses/TopicNotFound'
         '409':
           $ref: '#/components/responses/InsufficientFunds'
         '429':
@@ -101,6 +110,7 @@ paths:
           $ref: '#/components/responses/CustomServiceError'
         '5XX':
           $ref: '#/components/responses/InternalServerError'
+
   /publish:
     post:
       summary: Publish a message in a pubsub topic
@@ -121,32 +131,37 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
-          $ref: '#/components/responses/NotFound'
-          description: "topic not found"
+          $ref: '#/components/responses/TopicNotFound'
         '409':
           $ref: '#/components/responses/InsufficientFunds'
+        '413':
+          $ref: '#/components/responses/MessageTooBig'
         '429':
           $ref: '#/components/responses/TooManyRequests'
         '4XX':
           $ref: '#/components/responses/CustomServiceError'
         '5XX':
           $ref: '#/components/responses/InternalServerError'
+
   /read:
     get:
       summary: Read message from a pubsub topic
       parameters:
         - $ref: '#/components/parameters/topic'
-#        - $ref: '#/components/parameters/'
+        - $ref: '#/components/parameters/count'
       responses:
         "200":
-          description: "OK"
+          description: "Returns the read messages as well as pagination information"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
-          $ref: '#/components/responses/NotFound'
-          description: "topic not found"
+          $ref: '#/components/responses/TopicNotFound'
         '409':
           $ref: '#/components/responses/InsufficientFunds'
         '429':
@@ -155,13 +170,59 @@ paths:
           $ref: '#/components/responses/CustomServiceError'
         '5XX':
           $ref: '#/components/responses/InternalServerError'
+
+  /readall:
+    get:
+      summary: Read messages from multiple topic at once
+      parameters:
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/filter-prefix'
+        - $ref: '#/components/parameters/filter-suffix'
+      responses:
+        "200":
+          description: "Returns the read messages as well as pagination information"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadAllResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/InsufficientFunds'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '4XX':
+          $ref: '#/components/responses/CustomServiceError'
+        '5XX':
+          $ref: '#/components/responses/InternalServerError'
+
   /list:
     get:
       summary: List subscribed topics
-      parameters: []
+      parameters:
+        - $ref: '#/components/parameters/filter-prefix'
+        - $ref: '#/components/parameters/filter-suffix'
       responses:
         "200":
-          description: "OK"
+          description: "Returns a list of subscribed topic with characteristics"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/InsufficientFunds'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '4XX':
+          $ref: '#/components/responses/CustomServiceError'
+        '5XX':
+          $ref: '#/components/responses/InternalServerError'
 
 components:
   schemas:
@@ -171,36 +232,13 @@ components:
       type: object
       properties:
         queue-length:
-          description: The maximum number of pubsub message stored by the service.
-          type: integer
-          format: int32
-          minimum: 1
-          example: 10
-        queue-policy:
-          description: What happens when the number of pubsub message stored by the service fills up
-          type: string
-          enum:
-            - drop-old
-            - drop-new
-          example: drop-old
+          $ref: '#/components/schemas/QueueLengthProperty'
         timeout:
-          description: The maximum lifetime during which a pubsub topic is subscribed to after a /join, in seconds.
-          type: integer
-          format: int32
-          minimum: 1
-          example: 600
+          $ref: '#/components/schemas/TimeoutProperty'
         max-message-size:
-          description: The maximum size of a single pubsub message, in byte.
-          type: integer
-          format: int32
-          minimum: 1
-          example: 100000
+          $ref: '#/components/schemas/MaxMessageSizeProperty'
         maximum-topic:
-          description: The maximum number of pubsub topic subscribed to by a client.
-          type: integer
-          format: int32
-          minimum: 1
-          example: 200
+          $ref: '#/components/schemas/MaximumTopicProperty'
 
     JoinResponse:
       description: Response for /join
@@ -212,30 +250,70 @@ components:
         - max-message-size
       properties:
         queue-length:
-          description: The maximum number of pubsub message stored by the service.
-          type: integer
-          format: int32
-          minimum: 1
-          example: 10
+          $ref: '#/components/schemas/QueueLengthProperty'
         queue-policy:
-          description: What happens when the number of pubsub message stored by the service fills up
-          type: string
-          enum:
-            - drop-old
-            - drop-new
-          example: drop-old
+          $ref: '#/components/schemas/QueuePolicyProperty'
         timeout:
-          description: The maximum lifetime during which a pubsub topic is subscribed to after a /join, in seconds.
-          type: integer
-          format: int32
-          minimum: 1
-          example: 600
+          $ref: '#/components/schemas/TimeoutProperty'
         max-message-size:
-          description: The maximum size of a single pubsub message, in byte.
-          type: integer
-          format: int32
-          minimum: 1
-          example: 100000
+          $ref: '#/components/schemas/MaxMessageSizeProperty'
+
+    ReadResponse:
+      description: response for /read
+      type: object
+      required:
+        - messages-dropped
+        - remaining-message
+        - messages
+      properties:
+        messages-dropped:
+          $ref: '#/components/schemas/MessagesDroppedProperty'
+        remaining-message:
+          $ref: '#/components/schemas/RemainingMessageProperty'
+        messages:
+          $ref: '#/components/schemas/MessagesProperty'
+
+    ReadAllResponse:
+      description: response for /readall
+      type: array
+      items:
+        required:
+          - topic
+          - messages-dropped
+          - remaining-message
+          - messages
+        properties:
+          topic:
+            $ref: '#/components/schemas/TopicProperty'
+          messages-dropped:
+            $ref: '#/components/schemas/MessagesDroppedProperty'
+          remaining-message:
+            $ref: '#/components/schemas/RemainingMessageProperty'
+          messages:
+            $ref: '#/components/schemas/MessagesProperty'
+
+    ListResponse:
+      description: Response for /list
+      type: array
+      items:
+        type: object
+        required:
+          - topic
+        properties:
+          topic:
+            $ref: '#/components/schemas/TopicProperty'
+          queue-length:
+            $ref: '#/components/schemas/QueueLengthProperty'
+          queue-policy:
+            $ref: '#/components/schemas/QueuePolicyProperty'
+          timeout:
+            $ref: '#/components/schemas/TimeoutProperty'
+          max-message-size:
+            $ref: '#/components/schemas/MaxMessageSizeProperty'
+          remaining-message:
+            $ref: '#/components/schemas/RemainingMessageProperty'
+          messages-dropped:
+            $ref: '#/components/schemas/MessagesDroppedProperty'
 
     Failure:
       description: Response for a failed request
@@ -257,6 +335,80 @@ components:
               description: Optional, longer description of the error; may include UUID of transaction for support, links to documentation etc
               example: "Optional explanation for humans with more details"
 
+    QueueLengthProperty:
+      description: The maximum number of pubsub message stored by the service.
+      type: integer
+      format: int32
+      minimum: 1
+      example: 10
+
+    TimeoutProperty:
+      description: The maximum lifetime during which a pubsub topic is subscribed to after a /join, in seconds.
+      type: integer
+      format: int32
+      minimum: 1
+      example: 600
+
+    MaxMessageSizeProperty:
+      description: The maximum size of a single pubsub message, in byte.
+      type: integer
+      format: int32
+      minimum: 1
+      example: 100000
+
+    MaximumTopicProperty:
+      description: The maximum number of pubsub topic subscribed to by a client.
+      type: integer
+      format: int32
+      minimum: 1
+      example: 200
+
+    QueuePolicyProperty:
+      description: What happens when the number of pubsub message stored by the service fills up
+      type: string
+      enum:
+        - drop-old
+        - drop-new
+      example: drop-old
+
+    MessagesDroppedProperty:
+      description: The number of message dropped due to queue size constraint
+      type: integer
+      format: int32
+      minimum: 0
+      example: 5
+
+    RemainingMessageProperty:
+      description: The number of remaining message in the read queue
+      type: integer
+      format: int32
+      minimum: 0
+      example: 7
+
+    MessagesProperty:
+      description: The read messages.
+      type: array
+      items:
+        type: object
+        required:
+          - sender
+          - content
+        properties:
+          sender:
+            description: the PeerId of the message's sender
+            type: string
+            format: byte
+            example: TODO
+          content:
+            description: the base64 encoded message's content,
+            type: string
+            example: TODO
+
+    TopicProperty:
+      description: The topic name
+      type: string
+      example: foo
+
   parameters:
     topic:
       description: The name of a pubsub topic
@@ -276,7 +428,6 @@ components:
         type: integer
         default: 20
       example: 20
-
 
     queue-policy:
       description: What happens when the number of pubsub message stored by the service fills up
@@ -307,8 +458,38 @@ components:
       required: false
       schema:
         type: integer
-        default: 12345 # TODO
       example: 100000
+
+    count:
+      description: The number of message to read.
+      name: count
+      in: query
+      required: false
+      schema:
+        type: integer
+      example: 5
+
+    filter-prefix:
+      description: A string to filter topics based on prefix-matching the name.
+      name: filter-prefix
+      in: query
+      required: false
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 1000
+        example: '/foo/bar'
+
+    filter-suffix:
+      description: A string to filter topics based on suffix-matching the name.
+      name: filter-suffix
+      in: query
+      required: false
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 1000
+        example: '/events'
 
   responses:
     TooManyTopic:
@@ -351,15 +532,15 @@ components:
             UnauthorizedExample:
               $ref: '#/components/examples/UnauthorizedExample'
 
-    NotFound:
-      description: Error response (The specified resource was not found)
+    TopicNotFound:
+      description: Error response (The specified topic was not found)
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Failure'
           examples:
             NotFoundExample:
-              $ref: '#/components/examples/NotFoundExample'
+              $ref: '#/components/examples/TopicNotFoundExample'
 
     InsufficientFunds:
       description: Error response (Insufficient funds)
@@ -373,6 +554,14 @@ components:
 
     TooManyRequests:
       description: Error response (Too many requests; rate limiting)
+      headers:
+        Retry-After:
+          required: false
+          description: hint from the server to only retry after a number of seconds
+          example: 60
+          schema:
+            type: integer
+            minimum: 1
       content:
         application/json:
           schema:
@@ -430,12 +619,12 @@ components:
           details: "Access token is missing or invalid"
       summary: Response to an unauthorized request
 
-    NotFoundExample:
+    TopicNotFoundExample:
       value:
         error:
-          reason: "NOT_FOUND"
-          details: "The specified resource was not found"
-      summary: Response to a request for a resource that does not exist
+          reason: "TOPIC_NOT_FOUND"
+          details: "The specified topic was not found"
+      summary: Response to a request for a topic that is not joined
 
     InsufficientFundsExample:
       value:
@@ -444,7 +633,6 @@ components:
           details: "Unable to process request due to the lack of funds"
       summary: Response when access token run out of funds
 
-    #TODO: Retry-After ? as header?
     TooManyRequestsExample:
       value:
         error:
