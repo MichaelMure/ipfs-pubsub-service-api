@@ -198,6 +198,31 @@ paths:
         '5XX':
           $ref: '#/components/responses/InternalServerError'
 
+  /filter-peerid:
+    post:
+      summary: Instruct the service about read messages that the client side consider bogus or malicious.
+      description: One necessary component of pubsub is message filtering. This could be required for various reasons, ranging from technical (re-broadcasted message, maximum size ...) to malicious (spam, abuse ..). Some of those, the most generic, are expected to be handled by the service. On the other side of the spectrum, application logic and data is required to evaluate the validity of a message. This endpoint exist so that client can provide that feedback, which will allow the service to filter messages or prune bad peers.
+      parameters:
+        - $ref: "#/components/parameters/topic"
+        - $ref: "#/components/parameters/peerid"
+      responses:
+          "202":
+            description: "Service understood the instruction and will proceed"
+          '400':
+            $ref: '#/components/responses/BadRequest'
+          '401':
+            $ref: '#/components/responses/Unauthorized'
+          '404':
+            $ref: '#/components/responses/TopicNotFound'
+          '409':
+            $ref: '#/components/responses/InsufficientFunds'
+          '429':
+            $ref: '#/components/responses/TooManyRequests'
+          '4XX':
+            $ref: '#/components/responses/CustomServiceError'
+          '5XX':
+            $ref: '#/components/responses/InternalServerError'
+
   /list:
     get:
       summary: List subscribed topics
@@ -490,6 +515,16 @@ components:
         minLength: 1
         maxLength: 1000
         example: '/events'
+
+    peerid:
+      description: A libp2p peer identity.
+      name: peerid
+      in: query
+      required: true
+      schema:
+        type: string
+        maxLength: 1000
+        example: 'QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo'
 
   responses:
     TooManyTopic:
