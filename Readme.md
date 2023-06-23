@@ -24,7 +24,14 @@ This first step to use a pubsub service is to join a topic, and optionally defin
 
 The service will confirm with a 202, and returns the effective limits as a confirmation. Those limits can be restricted by the service if they are outside of the maximum advertised in the /discovery endpoints:
 
-`{"queue-length":10,"queue-policy":"drop-old","timeout":3600,"max-message-size":1000}`
+```json
+{
+  "queue-length": 10,
+  "queue-policy": "drop-old",
+  "timeout": 3600,
+  "max-message-size": 1000
+}
+```
 
 ### Publish and read messages
 
@@ -38,7 +45,23 @@ We can read messages in the queue:
 
 Here, we ask for a maximum of 2 messages. The service returns them, and inform us that there is 8 more in the queue, and that 2 have been dropped due to the queue filling up:
 
-`{"message-dropped":2,"remaining-messages":8,"messages":[{"sender":"QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo","content":"aGVsbG8gd29ybGQK"},{"sender":"QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo","content":"aG93IGFyZSB0aGluZ3MgdG9kYXk/Cg=="}]}`
+```json
+{
+  "message-dropped": 2,
+  "remaining-messages": 8,
+  "messages": [
+    {
+      "sender": "QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo",
+      "content": "aGVsbG8gd29ybGQK"
+    },
+    {
+      "sender": "QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo",
+      "content": "aG93IGFyZSB0aGluZ3MgdG9kYXk/Cg=="
+    }
+  ]
+}
+```
+
 
 ### Stay subscribed
 
