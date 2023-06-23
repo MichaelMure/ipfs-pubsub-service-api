@@ -9,11 +9,15 @@ info:
     
     This API allow to delegate to a more powerful instance or a service provider this role of interacting with pubsub. As this API is asynchronous at its core, it allows to instruct that provider to listen to topics, sleep, and come back later to retrieve messages. 
     
-    ## Design principles:
+    ## Design principles
     
     - effort is made to allow client to operate with the minimum of requests, and within a limited time window. An example of that is /join that returns before the topic is actually subscribed and ready.
     - as the real world as shown, there is a gradient of necessary validation of received message, ranging from generic or protocol layer (ex:  deduplicate messages, max message size) to application specific (non-conforming message, abuse ...). All of those would usually be done in the same place if the application directly perform pubsub, but this is not the case here. The choice here is to split those into server side (the generic part, including some form of spam prevention) and the client side (anything that require specific logic or data), and have a way for the client to hint the server about those bad message or PeerID.
     - provide a versioned API from the start
+    
+    ## Versioning
+    
+    This API is expected to be hosted at an URL with a path ending with `/v1`, so that future major versions, if any, can be hosted side by side. An example of that would be `https://pubsub-service.example.com/v1`.
     
     ## Expected usage pattern
     
