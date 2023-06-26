@@ -65,6 +65,6 @@ Here, we ask for a maximum of 2 messages. The service returns them, and inform u
 
 ### Stay subscribed
 
-To avoid keeping alive irrelevant topic subscriptions, services have a timeout defined per topic. If the client is not active on that topic (/join, /publish, /read or /read-all), the service consider that the client is gone and teardown that subscription. To avoid that, clients should signal liveness with a query to one of those endpoints, which will reset the timeout to the maximum duration defined during /join.
+To avoid keeping alive irrelevant topic subscriptions, services have a timeout defined per topic. If the client is not active on that topic (`/join`, `/publish`, `/read` or `/read-all`), the service consider that the client is gone and teardown that subscription. To avoid that, clients should signal liveness with a query to one of those endpoints, which will reset the timeout to the maximum duration defined during `/join`.
 
-Which endpoint to use is up to the client. For example, a client that does read message might want to periodically /read or /read-all, while a client only writing messages might want to periodically use /join again if not enough messages are published.
+Which endpoint to use is up to the client. For example, a client that does read message might want to periodically `/read` or `/read-all`, while a client only writing messages might want to periodically use `/join` again if not enough messages are published.
