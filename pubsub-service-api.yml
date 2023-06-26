@@ -282,6 +282,7 @@ paths:
         - $ref: '#/components/parameters/filter-prefix'
         - $ref: '#/components/parameters/filter-suffix'
         - $ref: '#/components/parameters/max-topic'
+        - $ref: '#/components/parameters/after-topic'
       responses:
         "200":
           description: "Returns a list of subscribed topic with characteristics"
@@ -495,6 +496,8 @@ components:
       required: true
       schema:
         type: string
+        minLength: 1
+        maxLength: 1000
       example: "foo"
 
     queue-length:
@@ -548,7 +551,7 @@ components:
       example: 5
 
     max-topic:
-      description: The number of topic to return.
+      description: The maximum number of topic to return.
       name: max-topic
       in: query
       required: false
@@ -587,6 +590,16 @@ components:
         type: string
         maxLength: 1000
         example: 'QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo'
+
+    after-topic:
+      description: A pagination cursor to only list topics after a specific one.
+      name: after-topic
+      in: query
+      required: false
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 1000
 
   responses:
     TooManyTopic:
