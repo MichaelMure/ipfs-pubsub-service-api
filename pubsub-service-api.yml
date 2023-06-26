@@ -82,7 +82,7 @@ paths:
       summary: Describe the service configuration and limits
       description: "Describe the service configuration and limits.
       
-      This endpoint returns the maximum acceptable settings that a client can ask for regarding a pubsub topic."
+      This endpoint returns the maximum acceptable settings that a client can ask for."
       responses:
         "200":
           description: "Returns the service configuration"
@@ -105,7 +105,7 @@ paths:
 
   /join:
     post:
-      summary: Subscribe to a pubsub topic
+      summary: Subscribe to a pubsub topic; also signal liveness
       description: "Subscribe to a pubsub topic.
       
       The client can define configuration for that topic (queue length, timeout...). Those configuration can be restricted by the server to conform to the server capability (see /discovery). The effective configuration is returned as part of the response.
@@ -200,7 +200,7 @@ paths:
       summary: Read message from a pubsub topic; also signal liveness
       parameters:
         - $ref: '#/components/parameters/topic'
-        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/max-message'
       responses:
         "200":
           description: "Returns the read messages as well as pagination information"
@@ -227,7 +227,7 @@ paths:
     get:
       summary: Read messages from multiple topic at once; also signal liveness
       parameters:
-        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/max-message'
         - $ref: '#/components/parameters/filter-prefix'
         - $ref: '#/components/parameters/filter-suffix'
       responses:
@@ -258,22 +258,22 @@ paths:
         - $ref: "#/components/parameters/topic"
         - $ref: "#/components/parameters/peerid"
       responses:
-          "202":
-            description: "Service understood the instruction and will proceed"
-          '400':
-            $ref: '#/components/responses/BadRequest'
-          '401':
-            $ref: '#/components/responses/Unauthorized'
-          '404':
-            $ref: '#/components/responses/TopicNotFound'
-          '409':
-            $ref: '#/components/responses/InsufficientFunds'
-          '429':
-            $ref: '#/components/responses/TooManyRequests'
-          '4XX':
-            $ref: '#/components/responses/CustomServiceError'
-          '5XX':
-            $ref: '#/components/responses/InternalServerError'
+        "202":
+          description: "Service understood the instruction and will proceed"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/TopicNotFound'
+        '409':
+          $ref: '#/components/responses/InsufficientFunds'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '4XX':
+          $ref: '#/components/responses/CustomServiceError'
+        '5XX':
+          $ref: '#/components/responses/InternalServerError'
 
   /list:
     get:
@@ -281,6 +281,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/filter-prefix'
         - $ref: '#/components/parameters/filter-suffix'
+        - $ref: '#/components/parameters/max-topic'
       responses:
         "200":
           description: "Returns a list of subscribed topic with characteristics"
@@ -537,9 +538,18 @@ components:
         type: integer
       example: 100000
 
-    count:
-      description: The number of message to read.
-      name: count
+    max-message:
+      description: The maximum number of message to read.
+      name: max-message
+      in: query
+      required: false
+      schema:
+        type: integer
+      example: 5
+
+    max-topic:
+      description: The number of topic to return.
+      name: max-topic
       in: query
       required: false
       schema:
