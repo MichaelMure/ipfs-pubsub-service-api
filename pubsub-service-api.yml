@@ -73,6 +73,12 @@ info:
     
     Which endpoint to use is up to the client. For example, a client that does read message might want to periodically /read or /read-all, while a client only writing messages might want to periodically use /join again if not enough messages are published.
 
+    ### Verify messages
+
+    If the consumer of that API is not trusting the service, it can use `include-signature=true` when calling `/read` or `/read-all`, to also return the message's signatures, as well as the corresponding sender's public key. Verifying that the public key match the peerID and that the signature is valid for that message will prove the authenticity of the message.
+
+    Note though that a small enough public key (for example with ED25519 and secp256k1) is directly embedded into the peerID, so it is not sent as a separate public key. It should be instead extracted from the peerID. More information can be found in the [peerID specification](https://github.com/libp2p/specs/blob/master/peer-ids/peer-ids.md).
+
 servers:
   - url: https://pubsub-service.example.com/v1
 
@@ -476,19 +482,19 @@ components:
           - content
         properties:
           sender:
-            description: the Peer Id of the message's sender
+            description: the peerID of the message's sender
             type: string
             example: "QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv"
           content:
-            description: the base64 encoded message's content,
+            description: the base64 encoded message's content
             type: string
             example: "YWJj"
           pubkey:
-            description: the public key associated to the sender's peer ID, formatted as a base64-encoded x509 DER public key
+            description: the public key associated to the sender's peer ID, formatted as a base64-encoded x509 DER public key. If the the signature has not been requested or if the peerID directly embed the public key (for example with ED25519 and secp256k1), this field is omitted.
             format: byte
             example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
           signature:
-            description: the signature for that message
+            description: the signature for that message. If the the signature has not been requested, this field is omitted.
             format: byte
             example: "An7j/dPng3efQoyBMiFy/owSc5kb4pVteI9BZEdL67Krt/W4zEUidKuTi67X580p5dqrd/y04iODgZ99/6sMxb6/7h0++K/M9jkVr2544+0GT5I7fozyPZavbL5bMTy5azeWpZMgI8PiaPJChkHOaRelc7fuqeVB/lIds0ojUhBASOdReNOOMXMvhMjwe/Hh+jACXlJK0SraBV5UET4SPqy/NBhdYdkDOmoB7E2EWHWx6QQk80WPVEAZsKyVkCTz2QT3Hzb4HRxMpLYZ41ZeDggkWtnkG62X6faTX33tBwiCtO2Xac0awf56PxEeXCXhYBwi04Sk2HtV5GBo7gPeCw=="
 
