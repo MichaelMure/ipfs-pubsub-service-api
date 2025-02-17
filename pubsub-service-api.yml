@@ -56,12 +56,12 @@ info:
       "remaining-messages": 8,
       "messages": [
         {
-          "sender": "QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo",
-          "content": "aGVsbG8gd29ybGQK"
+          "from": "QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo",
+          "data": "aGVsbG8gd29ybGQK"
         },
         {
-          "sender": "QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo",
-          "content": "aG93IGFyZSB0aGluZ3MgdG9kYXk/Cg=="
+          "from": "QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo",
+          "data": "aG93IGFyZSB0aGluZ3MgdG9kYXk/Cg=="
         }
       ]
     }
@@ -472,14 +472,14 @@ components:
       items:
         type: object
         required:
-          - sender
-          - content
+          - from
+          - data
         properties:
-          sender:
+          from:
             description: the Peer Id of the message's sender
             type: string
             example: "QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv"
-          content:
+          data:
             description: the base64 encoded message's content,
             type: string
             example: "YWJj"
