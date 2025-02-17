@@ -197,7 +197,7 @@ paths:
 
   /read:
     get:
-      summary: Read message from a pubsub topic; also signal liveness
+      summary: Read message from a pubsub topic; also signal liveness. This consumes the returned messages from the queue.
       parameters:
         - $ref: '#/components/parameters/topic'
         - $ref: '#/components/parameters/max-message'
@@ -226,7 +226,7 @@ paths:
 
   /read-all:
     get:
-      summary: Read messages from multiple topic at once; also signal liveness
+      summary: Read messages from multiple topic at once; also signal liveness. This consumes the returned messsages from the queue.
       parameters:
         - $ref: '#/components/parameters/max-message'
         - $ref: '#/components/parameters/filter-prefix'
