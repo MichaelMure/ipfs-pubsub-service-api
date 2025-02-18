@@ -1,6 +1,6 @@
 openapi: "3.0.2"
 info:
-  title: "Pubsub service API"
+  title: "Pubsub Service API"
   version: "1.0.0"
   description: |
     ## Goal
@@ -9,7 +9,7 @@ info:
     
     This API allow to delegate to a more powerful instance or a service provider this role of interacting with pubsub. As this API is asynchronous at its core, it allows to instruct that provider to listen to topics, sleep, and come back later to retrieve messages. 
     
-    ## Design principles
+    ## Design Principles
     
     - effort is made to allow client to operate with the minimum of requests, and within a limited time window. An example of that is /join that returns before the topic is actually subscribed and ready.
     - as the real world as shown, there is a gradient of necessary validation of received message, ranging from generic or protocol layer (ex:  deduplicate messages, max message size) to application specific (non-conforming message, abuse ...). All of those would usually be done in the same place if the application directly perform pubsub, but this is not the case here. The choice here is to split those into server side (the generic part, including some form of spam prevention) and the client side (anything that require specific logic or data), and have a way for the client to hint the server about those bad message or PeerID.
@@ -19,9 +19,9 @@ info:
     
     This API is expected to be hosted at an URL with a path ending with `/v1`, so that future major versions, if any, can be hosted side by side. An example of that would be `https://pubsub-service.example.com/v1`.
     
-    ## Expected usage pattern
+    ## Usage Patterns
     
-    ### Subscribing to a topic
+    ### Subscribing to a Topic
     
     This first step to use a pubsub service is to join a topic, and optionally define limits. For example, the following will join the `foo` topic for a maximum of 3600s, have a queue of 10 messages of maximum 1000 bytes, and drop old messages if the queue fills up:
     
@@ -38,7 +38,7 @@ info:
     }
     ```
   
-    ### Publish and read messages
+    ### Publishing and Reading Messages
     
     We now can publish a message, by passing it as the body of the following request:
     
@@ -52,8 +52,8 @@ info:
     
     ```json
     {
-      "message-dropped": 2,
-      "remaining-messages": 8,
+      "messages-dropped": 2,
+      "messages-remaining": 8,
       "messages": [
         {
           "from": "QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo",
@@ -67,13 +67,13 @@ info:
     }
     ```
     
-    ### Stay subscribed
+    ### Maintaining Active Subscription
     
     To avoid keeping alive irrelevant topic subscriptions, services have a timeout defined per topic. If the client is not active on that topic (/join, /publish, /read or /read-all), the service consider that the client is gone and teardown that subscription. To avoid that, clients should signal liveness with a query to one of those endpoints, which will reset the timeout to the maximum duration defined during /join.
     
     Which endpoint to use is up to the client. For example, a client that does read message might want to periodically /read or /read-all, while a client only writing messages might want to periodically use /join again if not enough messages are published.
 
-    ## Multi-tenant aspect
+    ## Multi-Tenant Considerations
 
     This specification doesn't enforce anything about how multi-tenancy should be implemented. It is however expected that an authentication layer (BasicAuth, OAuth, UCAN ...) may be added, which should provide the relevant client identifier to return the appropriate responses for that specific client. This is however not a requirement, as an implementation could serve a single client without authentication.
 
@@ -94,22 +94,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DiscoveryResponse"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '409':
-          $ref: '#/components/responses/InsufficientFunds'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '4XX':
-          $ref: '#/components/responses/CustomServiceError'
-        '5XX':
-          $ref: '#/components/responses/InternalServerError'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/InsufficientFunds"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        default:
+          $ref: "#/components/responses/CustomServiceError"
 
   /join:
     post:
-      summary: Subscribe to a pubsub topic; also signal liveness
+      summary: Subscribe to a pubsub topic and signal liveness
       description: "Subscribe to a pubsub topic.
       
       The client can define configuration for that topic (queue length, timeout...). Those configuration can be restricted by the server to conform to the server capability (see /discovery). The effective configuration is returned as part of the response.
@@ -119,10 +119,10 @@ paths:
       Note that subscription is not an instantaneous operation and can happen after this request returns. It may take some time before the subscription is processed and effective in the server."
       parameters:
         - $ref: "#/components/parameters/topic"
-        - $ref: '#/components/parameters/queue-length'
-        - $ref: '#/components/parameters/queue-policy'
-        - $ref: '#/components/parameters/timeout'
-        - $ref: '#/components/parameters/max-message-size'
+        - $ref: "#/components/parameters/queue-length"
+        - $ref: "#/components/parameters/queue-policy"
+        - $ref: "#/components/parameters/timeout"
+        - $ref: "#/components/parameters/max-message-size"
       responses:
         "202":
           description: "Join accepted. The service will proceed and start to listen."
@@ -130,18 +130,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JoinResponse"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '409':
-          $ref: '#/components/responses/InsufficientFunds'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '4XX':
-          $ref: '#/components/responses/CustomServiceError'
-        '5XX':
-          $ref: '#/components/responses/InternalServerError'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/InsufficientFunds"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        default:
+          $ref: "#/components/responses/CustomServiceError"
 
   /leave:
     post:
@@ -152,26 +152,26 @@ paths:
       responses:
         "200":
           description: "Leave is effective"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/TopicNotFound'
-        '409':
-          $ref: '#/components/responses/InsufficientFunds'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '4XX':
-          $ref: '#/components/responses/CustomServiceError'
-        '5XX':
-          $ref: '#/components/responses/InternalServerError'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
+        "409":
+          $ref: "#/components/responses/InsufficientFunds"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        default:
+          $ref: "#/components/responses/CustomServiceError"
 
   /publish:
     post:
-      summary: Publish a message in a pubsub topic; also signal liveness
+      summary: Publish a message in a pubsub topic and signal liveness
       parameters:
-        - $ref: '#/components/parameters/topic'
+        - $ref: "#/components/parameters/topic"
       requestBody:
         required: true
         content:
@@ -181,80 +181,80 @@ paths:
               format: binary
       responses:
         "200":
-          description: "OK"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/TopicNotFound'
-        '409':
-          $ref: '#/components/responses/InsufficientFunds'
-        '413':
-          $ref: '#/components/responses/MessageTooBig'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '4XX':
-          $ref: '#/components/responses/CustomServiceError'
-        '5XX':
-          $ref: '#/components/responses/InternalServerError'
+          description: "Message published successfully."
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
+        "409":
+          $ref: "#/components/responses/InsufficientFunds"
+        "413":
+          $ref: "#/components/responses/MessageTooBig"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        default:
+          $ref: "#/components/responses/CustomServiceError"
 
   /read:
     get:
-      summary: Read message from a pubsub topic; also signal liveness. This consumes the returned messages from the queue.
+      summary: Read message from a pubsub topic and signal liveness. This consumes the returned messages from the queue
       parameters:
-        - $ref: '#/components/parameters/topic'
-        - $ref: '#/components/parameters/max-message'
-        - $ref: '#/components/parameters/include-signature'
+        - $ref: "#/components/parameters/topic"
+        - $ref: "#/components/parameters/max-messages"
+        - $ref: "#/components/parameters/include-signature"
       responses:
         "200":
-          description: "Returns the read messages as well as pagination information"
+          description: "Returns the read messages as well as pagination information."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReadResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/TopicNotFound'
-        '409':
-          $ref: '#/components/responses/InsufficientFunds'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '4XX':
-          $ref: '#/components/responses/CustomServiceError'
-        '5XX':
-          $ref: '#/components/responses/InternalServerError'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
+        "409":
+          $ref: "#/components/responses/InsufficientFunds"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        default:
+          $ref: "#/components/responses/CustomServiceError"
 
   /read-all:
     get:
-      summary: Read messages from multiple topic at once; also signal liveness. This consumes the returned messsages from the queue.
+      summary: Read messages from multiple topic at once and signal liveness. This consumes the returned messages from the queue.
       parameters:
-        - $ref: '#/components/parameters/max-message'
-        - $ref: '#/components/parameters/filter-prefix'
-        - $ref: '#/components/parameters/filter-suffix'
-        - $ref: '#/components/parameters/include-signature'
+        - $ref: "#/components/parameters/max-messages"
+        - $ref: "#/components/parameters/filter-prefix"
+        - $ref: "#/components/parameters/filter-suffix"
+        - $ref: "#/components/parameters/include-signature"
       responses:
         "200":
-          description: "Returns the read messages as well as pagination information"
+          description: "Returns the read messages as well as pagination information."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReadAllResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '409':
-          $ref: '#/components/responses/InsufficientFunds'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '4XX':
-          $ref: '#/components/responses/CustomServiceError'
-        '5XX':
-          $ref: '#/components/responses/InternalServerError'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/InsufficientFunds"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        default:
+          $ref: "#/components/responses/CustomServiceError"
 
   /filter-peerid:
     post:
@@ -265,68 +265,67 @@ paths:
         - $ref: "#/components/parameters/peerid"
       responses:
         "202":
-          description: "Service understood the instruction and will proceed"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/TopicNotFound'
-        '409':
-          $ref: '#/components/responses/InsufficientFunds'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '4XX':
-          $ref: '#/components/responses/CustomServiceError'
-        '5XX':
-          $ref: '#/components/responses/InternalServerError'
+          description: "Service understood the instruction and will proceed."
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
+        "409":
+          $ref: "#/components/responses/InsufficientFunds"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        default:
+          $ref: "#/components/responses/CustomServiceError"
 
   /list:
     get:
       summary: List subscribed topics
       parameters:
-        - $ref: '#/components/parameters/filter-prefix'
-        - $ref: '#/components/parameters/filter-suffix'
-        - $ref: '#/components/parameters/max-topic'
-        - $ref: '#/components/parameters/after-topic'
+        - $ref: "#/components/parameters/filter-prefix"
+        - $ref: "#/components/parameters/filter-suffix"
+        - $ref: "#/components/parameters/max-topics"
+        - $ref: "#/components/parameters/after-topic"
       responses:
         "200":
-          description: "Returns a list of subscribed topic with characteristics"
+          description: "Returns a list of subscribed topic with characteristics."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '409':
-          $ref: '#/components/responses/InsufficientFunds'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '4XX':
-          $ref: '#/components/responses/CustomServiceError'
-        '5XX':
-          $ref: '#/components/responses/InternalServerError'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/InsufficientFunds"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        default:
+          $ref: "#/components/responses/CustomServiceError"
 
 components:
   schemas:
     # Note, each config is optional, as the service can opt-in to not have limits
     DiscoveryResponse:
-      description: Response for /discovery
+      description: "Response schema for the /discovery endpoint."
       type: object
       properties:
         queue-length:
-          $ref: '#/components/schemas/QueueLengthProperty'
+          $ref: "#/components/schemas/QueueLengthProperty"
         timeout:
-          $ref: '#/components/schemas/TimeoutProperty'
+          $ref: "#/components/schemas/TimeoutProperty"
         max-message-size:
-          $ref: '#/components/schemas/MaxMessageSizeProperty'
-        maximum-topic:
-          $ref: '#/components/schemas/MaximumTopicProperty'
-
+          $ref: "#/components/schemas/MaxMessageSizeProperty"
+        max-topics:
+          $ref: "#/components/schemas/MaxTopicsProperty"
     JoinResponse:
-      description: Response for /join
+      description: "Response schema for the /join endpoint."
       type: object
       required:
         - queue-length
@@ -335,50 +334,48 @@ components:
         - max-message-size
       properties:
         queue-length:
-          $ref: '#/components/schemas/QueueLengthProperty'
+          $ref: "#/components/schemas/QueueLengthProperty"
         queue-policy:
-          $ref: '#/components/schemas/QueuePolicyProperty'
+          $ref: "#/components/schemas/QueuePolicyProperty"
         timeout:
-          $ref: '#/components/schemas/TimeoutProperty'
+          $ref: "#/components/schemas/TimeoutProperty"
         max-message-size:
-          $ref: '#/components/schemas/MaxMessageSizeProperty'
-
+          $ref: "#/components/schemas/MaxMessageSizeProperty"
     ReadResponse:
-      description: response for /read
+      description: "Response schema for the /read endpoint."
       type: object
       required:
         - messages-dropped
-        - remaining-message
+        - messages-remaining
         - messages
       properties:
         messages-dropped:
-          $ref: '#/components/schemas/MessagesDroppedProperty'
-        remaining-message:
-          $ref: '#/components/schemas/RemainingMessageProperty'
+          $ref: "#/components/schemas/MessagesDroppedProperty"
+        messages-remaining:
+          $ref: "#/components/schemas/MessagesRemainingProperty"
         messages:
-          $ref: '#/components/schemas/MessagesProperty'
-
+          $ref: "#/components/schemas/MessagesProperty"
     ReadAllResponse:
-      description: response for /read-all
+      description: "Response schema for the /read-all endpoint."
       type: array
       items:
+        type: object
         required:
           - topic
-          - messages-dropped
-          - remaining-message
           - messages
+          - messages-dropped
+          - messages-remaining
         properties:
           topic:
-            $ref: '#/components/schemas/TopicProperty'
+            $ref: "#/components/schemas/TopicProperty"
           messages-dropped:
-            $ref: '#/components/schemas/MessagesDroppedProperty'
-          remaining-message:
-            $ref: '#/components/schemas/RemainingMessageProperty'
+            $ref: "#/components/schemas/MessagesDroppedProperty"
+          messages-remaining:
+            $ref: "#/components/schemas/MessagesRemainingProperty"
           messages:
-            $ref: '#/components/schemas/MessagesProperty'
-
+            $ref: "#/components/schemas/MessagesProperty"
     ListResponse:
-      description: Response for /list
+      description: "Response schema for the /list endpoint."
       type: array
       items:
         type: object
@@ -386,22 +383,21 @@ components:
           - topic
         properties:
           topic:
-            $ref: '#/components/schemas/TopicProperty'
+            $ref: "#/components/schemas/TopicProperty"
           queue-length:
-            $ref: '#/components/schemas/QueueLengthProperty'
+            $ref: "#/components/schemas/QueueLengthProperty"
           queue-policy:
-            $ref: '#/components/schemas/QueuePolicyProperty'
+            $ref: "#/components/schemas/QueuePolicyProperty"
           timeout:
-            $ref: '#/components/schemas/TimeoutProperty'
+            $ref: "#/components/schemas/TimeoutProperty"
           max-message-size:
-            $ref: '#/components/schemas/MaxMessageSizeProperty'
-          remaining-message:
-            $ref: '#/components/schemas/RemainingMessageProperty'
+            $ref: "#/components/schemas/MaxMessageSizeProperty"
+          messages-remaining:
+            $ref: "#/components/schemas/MessagesRemainingProperty"
           messages-dropped:
-            $ref: '#/components/schemas/MessagesDroppedProperty'
-
+            $ref: "#/components/schemas/MessagesDroppedProperty"
     Failure:
-      description: Response for a failed request
+      description: "Schema for a failure response."
       type: object
       required:
         - error
@@ -413,65 +409,58 @@ components:
           properties:
             reason:
               type: string
-              description: Mandatory string identifying the type of error
+              description: "A mandatory code identifying the error type."
               example: "ERROR_CODE_FOR_MACHINES"
             details:
               type: string
-              description: Optional, longer description of the error; may include UUID of transaction for support, links to documentation etc
+              description: Optional, longer description of the error; may include UUID of transaction for support, links to documentation etc.
               example: "Optional explanation for humans with more details"
 
     QueueLengthProperty:
-      description: The maximum number of pubsub message stored by the service.
+      description: "The maximum number of pubsub messages that will be stored by the service."
       type: integer
       format: int32
       minimum: 1
       example: 10
-
     TimeoutProperty:
-      description: The maximum lifetime during which a pubsub topic is subscribed to after a /join, in seconds.
+      description: "The duration (in seconds) for which a pubsub topic remains subscribed after a /join operation."
       type: integer
       format: int32
       minimum: 1
       example: 600
-
     MaxMessageSizeProperty:
-      description: The maximum size of a single pubsub message, in byte.
+      description: "The maximum size (in bytes) allowed for a single pubsub message."
       type: integer
       format: int32
       minimum: 1
       example: 100000
-
-    MaximumTopicProperty:
-      description: The maximum number of pubsub topic subscribed to by a client.
+    MaxTopicsProperty:
+      description: "The maximum number of pubsub topics a client can subscribe to."
       type: integer
       format: int32
       minimum: 1
       example: 200
-
     QueuePolicyProperty:
-      description: What happens when the number of pubsub message stored by the service fills up
+      description: "The policy applied when the pubsub message queue is full."
       type: string
       enum:
         - drop-old
         - drop-new
       example: drop-old
-
     MessagesDroppedProperty:
-      description: The number of message dropped due to queue size constraint
+      description: "The number of messages dropped due to queue capacity constraints."
       type: integer
       format: int32
       minimum: 0
       example: 5
-
-    RemainingMessageProperty:
-      description: The number of remaining message in the read queue
+    MessagesRemainingProperty:
+      description: "The number of messages remaining in the queue."
       type: integer
       format: int32
       minimum: 0
       example: 7
-
     MessagesProperty:
-      description: The read messages.
+      description: "An array of messages that have been read."
       type: array
       items:
         type: object
@@ -480,30 +469,31 @@ components:
           - data
         properties:
           from:
-            description: the Peer Id of the message's sender
+            description: "The peer ID of the sender."
             type: string
             example: "QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv"
           data:
-            description: the base64 encoded message's content,
+            description: "The base64-encoded content of the message."
             type: string
             example: "YWJj"
           pubkey:
-            description: the public key associated to the sender's peer ID, formatted as a base64-encoded x509 DER public key
+            description: "The sender's public key, formatted as a base64-encoded X.509 DER public key."
+            type: string
             format: byte
             example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
           signature:
-            description: the signature for that message
+            description: "The signature for the message."
+            type: string
             format: byte
             example: "An7j/dPng3efQoyBMiFy/owSc5kb4pVteI9BZEdL67Krt/W4zEUidKuTi67X580p5dqrd/y04iODgZ99/6sMxb6/7h0++K/M9jkVr2544+0GT5I7fozyPZavbL5bMTy5azeWpZMgI8PiaPJChkHOaRelc7fuqeVB/lIds0ojUhBASOdReNOOMXMvhMjwe/Hh+jACXlJK0SraBV5UET4SPqy/NBhdYdkDOmoB7E2EWHWx6QQk80WPVEAZsKyVkCTz2QT3Hzb4HRxMpLYZ41ZeDggkWtnkG62X6faTX33tBwiCtO2Xac0awf56PxEeXCXhYBwi04Sk2HtV5GBo7gPeCw=="
-
     TopicProperty:
-      description: The topic name
+      description: "The name of the pubsub topic."
       type: string
-      example: foo
+      example: "foo"
 
   parameters:
     topic:
-      description: The name of a pubsub topic
+      description: "The name of the pubsub topic."
       name: topic
       in: query
       required: true
@@ -514,7 +504,7 @@ components:
       example: "foo"
 
     queue-length:
-      description: The maximum number of pubsub message stored by the service.
+      description: "The maximum number of pubsub messages stored by the service."
       name: queue-length
       in: query
       required: false
@@ -524,7 +514,7 @@ components:
       example: 20
 
     queue-policy:
-      description: What happens when the number of pubsub message stored by the service fills up
+      description: "The policy to apply when the message queue is full."
       name: queue-policy
       in: query
       required: false
@@ -536,7 +526,7 @@ components:
       example: drop-old
 
     timeout:
-      description: The maximum lifetime during which a pubsub topic is subscribed to after a /join, in seconds.
+      description: "The subscription timeout (in seconds) for a pubsub topic after a /join operation."
       name: timeout
       in: query
       required: false
@@ -546,7 +536,7 @@ components:
       example: 600
 
     max-message-size:
-      description: The maximum length in byte for a pubsub message.
+      description: "The maximum allowed size (in bytes) for a pubsub message."
       name: max-message-size
       in: query
       required: false
@@ -554,9 +544,9 @@ components:
         type: integer
       example: 100000
 
-    max-message:
-      description: The maximum number of message to read.
-      name: max-message
+    max-messages:
+      description: "The maximum number of messages to read."
+      name: max-messages
       in: query
       required: false
       schema:
@@ -564,7 +554,7 @@ components:
       example: 5
 
     include-signature:
-      description: If set, public key and signature for the received messages is also returned.
+      description: "If true, the response includes the public key and signature for each message."
       name: include-signature
       in: query
       required: false
@@ -573,8 +563,8 @@ components:
         default: false
       example: true
 
-    max-topic:
-      description: The maximum number of topic to return.
+    max-topics:
+      description: "The maximum number of topics to return."
       name: max-topic
       in: query
       required: false
@@ -583,7 +573,7 @@ components:
       example: 5
 
     filter-prefix:
-      description: A string to filter topics based on prefix-matching the name.
+      description: "Filter topics by a prefix string."
       name: filter-prefix
       in: query
       required: false
@@ -591,10 +581,10 @@ components:
         type: string
         minLength: 1
         maxLength: 1000
-        example: '/foo/bar'
+      example: "/foo/bar"
 
     filter-suffix:
-      description: A string to filter topics based on suffix-matching the name.
+      description: "Filter topics by a suffix string."
       name: filter-suffix
       in: query
       required: false
@@ -602,20 +592,20 @@ components:
         type: string
         minLength: 1
         maxLength: 1000
-        example: '/events'
+      example: "/events"
 
     peerid:
-      description: A libp2p peer identity.
+      description: "The libp2p peer identity."
       name: peerid
       in: query
       required: true
       schema:
         type: string
         maxLength: 1000
-        example: 'QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo'
+      example: "QmdXGaeGiVA745XorV1jr11RHxB9z4fqykm6xCUPX1aTJo"
 
     after-topic:
-      description: A pagination cursor to only list topics after a specific one.
+      description: "A pagination cursor to list topics after a specified topic."
       name: after-topic
       in: query
       required: false
@@ -625,72 +615,72 @@ components:
         maxLength: 1000
 
   responses:
-    TooManyTopic:
-      description: Error response (Too many topics; the limit of number of subscribed topic by a client was reached)
+    TooManyTopics:
+      description: "Error response indicating that client subscribed to too many topics have been subscribed."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Failure'
+            $ref: "#/components/schemas/Failure"
           examples:
             BadRequestExample:
-              $ref: '#/components/examples/TooManyTopicExample'
+              $ref: "#/components/examples/TooManyTopicsExample"
 
     MessageTooBig:
-      description: Error response (Message too big; the given message size exceed the service limits)
+      description: "Error response indicating that the message size exceeds the allowed limit."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Failure'
+            $ref: "#/components/schemas/Failure"
           examples:
             BadRequestExample:
-              $ref: '#/components/examples/MessageTooBigExample'
+              $ref: "#/components/examples/MessageTooBigExample"
 
     BadRequest:
-      description: Error response (Bad request)
+      description: "Error response for a bad request."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Failure'
+            $ref: "#/components/schemas/Failure"
           examples:
             BadRequestExample:
-              $ref: '#/components/examples/BadRequestExample'
+              $ref: "#/components/examples/BadRequestExample"
 
     Unauthorized:
-      description: Error response (Unauthorized; access token is missing or invalid)
+      description: "Error response for an unauthorized request."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Failure'
+            $ref: "#/components/schemas/Failure"
           examples:
             UnauthorizedExample:
-              $ref: '#/components/examples/UnauthorizedExample'
+              $ref: "#/components/examples/UnauthorizedExample"
 
     TopicNotFound:
-      description: Error response (The specified topic was not found)
+      description: "Error response indicating that the specified topic was not found."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Failure'
+            $ref: "#/components/schemas/Failure"
           examples:
             NotFoundExample:
-              $ref: '#/components/examples/TopicNotFoundExample'
+              $ref: "#/components/examples/TopicNotFoundExample"
 
     InsufficientFunds:
-      description: Error response (Insufficient funds)
+      description: "Error response indicating insufficient funds."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Failure'
+            $ref: "#/components/schemas/Failure"
           examples:
             InsufficientFundsExample:
-              $ref: '#/components/examples/InsufficientFundsExample'
+              $ref: "#/components/examples/InsufficientFundsExample"
 
     TooManyRequests:
-      description: Error response (Too many requests; rate limiting)
+      description: "Error response for too many requests (rate limiting)."
       headers:
         Retry-After:
           required: false
-          description: hint from the server to only retry after a number of seconds
+          description: "Indicates how many seconds to wait before retrying."
           example: 60
           schema:
             type: integer
@@ -704,84 +694,85 @@ components:
               $ref: "#/components/examples/TooManyRequestsExample"
 
     CustomServiceError:
-      description: Error response (Custom service error)
+      description: "Error response for a custom service error."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Failure'
+            $ref: "#/components/schemas/Failure"
           examples:
             CustomServiceErrorExample:
-              $ref: '#/components/examples/CustomServiceErrorExample'
+              $ref: "#/components/examples/CustomServiceErrorExample"
 
     InternalServerError:
-      description: Error response (Unexpected internal server error)
+      description: "Error response for an unexpected internal server error."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Failure'
+            $ref: "#/components/schemas/Failure"
           examples:
             InternalServerErrorExample:
-              $ref: '#/components/examples/InternalServerErrorExample'
+              $ref: "#/components/examples/InternalServerErrorExample"
 
   examples:
-    TooManyTopicExample:
+    TooManyTopicsExample:
       value:
         error:
-          reason: "TOO_MANY_TOPIC"
-          details: "Too many topic are already subscribed"
-      summary: Response when too many topics are already subscribed and the service refuse to subscribe to a new one
+          reason: "TOO_MANY_TOPICS"
+          details: "Too many topics are already subscribed."
+      summary: "Response when the maximum number of topics has been reached."
 
     MessageTooBigExample:
       value:
         error:
           reason: "MESSAGE_TOO_BIG"
-          details: "The message is too big"
-      summary: Response when the client ask to send a message that is too big for the topic configured limit.
+          details: "The message exceeds the allowed size."
+      summary: "Response when the message size is too large."
 
     BadRequestExample:
       value:
         error:
           reason: "BAD_REQUEST"
-          details: "Explanation for humans with more details"
-      summary: A sample response to a bad request; reason will differ
+          details: "The request is malformed or invalid."
+      summary: "Example of a bad request response."
 
     UnauthorizedExample:
       value:
         error:
           reason: "UNAUTHORIZED"
-          details: "Access token is missing or invalid"
-      summary: Response to an unauthorized request
+          details: "Access token is missing or invalid."
+      summary: "Response for an unauthorized request."
 
     TopicNotFoundExample:
       value:
         error:
           reason: "TOPIC_NOT_FOUND"
-          details: "The specified topic was not found"
-      summary: Response to a request for a topic that is not joined
+          details: "The specified topic was not found."
+      summary: "Response when the topic is not found."
 
     InsufficientFundsExample:
       value:
         error:
           reason: "INSUFFICIENT_FUNDS"
-          details: "Unable to process request due to the lack of funds"
-      summary: Response when access token run out of funds
+          details: "The request could not be processed due to insufficient funds."
+      summary: "Response for insufficient funds."
 
     TooManyRequestsExample:
       value:
         error:
           reason: "TOO_MANY_REQUESTS"
-          details: "Request denied due to too many requests sent to the server"
+          details: "Too many requests have been sent to the server."
+      summary: "Response when rate limiting is applied."
 
     CustomServiceErrorExample:
       value:
         error:
           reason: "CUSTOM_ERROR_CODE_FOR_MACHINES"
-          details: "Optional explanation for humans with more details"
-      summary: Response when a custom error occurred
+          details: "A custom error occurred."
+      summary: "Response for a custom service error."
 
     InternalServerErrorExample:
       value:
         error:
           reason: "INTERNAL_SERVER_ERROR"
-          details: "Explanation for humans with more details"
-      summary: Response when unexpected error occurred
+          details: "An unexpected internal server error occurred."
+      summary: "Response for an internal server error."
