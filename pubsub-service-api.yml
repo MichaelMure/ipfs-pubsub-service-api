@@ -19,7 +19,7 @@ info:
     
     This API is expected to be hosted at an URL with a path ending with `/v1`, so that future major versions, if any, can be hosted side by side. An example of that would be `https://pubsub-service.example.com/v1`.
     
-    ## Usage Patterns
+    ## Expected Usage Patterns
     
     ### Subscribing to a Topic
     
@@ -399,7 +399,7 @@ components:
           properties:
             reason:
               type: string
-              description: "A mandatory code identifying the error type."
+              description: "A mandatory string identifying the type of error."
               example: "ERROR_CODE_FOR_MACHINES"
             details:
               type: string
@@ -407,7 +407,7 @@ components:
               example: "Optional explanation for humans with more details"
 
     QueueLengthProperty:
-      description: "The maximum number of pubsub messages that will be stored by the service."
+      description: "The maximum number of pubsub messages that can be stored by the service."
       type: integer
       format: int32
       minimum: 1
@@ -463,11 +463,11 @@ components:
             type: string
             example: "QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv"
           data:
-            description: "The base64-encoded content of the message."
+            description: "The content encoded with base64 standard alphabet and padding."
             type: string
             example: "YWJj"
           pubkey:
-            description: "The sender's public key, formatted as a base64-encoded X.509 DER public key."
+            description: "The sender's public key encoded with base64 standard alphabet and padding in X.509 DER format."
             type: string
             format: byte
             example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
