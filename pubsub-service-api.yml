@@ -463,11 +463,11 @@ components:
             type: string
             example: "QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv"
           data:
-            description: "The content encoded with base64 standard alphabet and padding."
+            description: "The content encoded with base64 standard alphabet with padding."
             type: string
             example: "YWJj"
           pubkey:
-            description: "The sender's public key encoded with base64 standard alphabet and padding in X.509 DER format."
+            description: "The sender's public key encoded with base64 standard alphabet with padding in X.509 DER format."
             type: string
             format: byte
             example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
