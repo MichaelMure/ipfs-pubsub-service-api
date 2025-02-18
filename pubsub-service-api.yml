@@ -98,14 +98,14 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "409":
+        "402":
           $ref: "#/components/responses/InsufficientFunds"
         "429":
           $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-        default:
+        "4XX":
           $ref: "#/components/responses/CustomServiceError"
+        "5XX":
+          $ref: "#/components/responses/InternalServerError"
 
   /join:
     post:
@@ -134,14 +134,14 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "409":
+        "402":
           $ref: "#/components/responses/InsufficientFunds"
         "429":
           $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-        default:
+        "4XX":
           $ref: "#/components/responses/CustomServiceError"
+        "5XX":
+          $ref: "#/components/responses/InternalServerError"
 
   /leave:
     post:
@@ -156,16 +156,14 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/TopicNotFound"
-        "409":
+        "402":
           $ref: "#/components/responses/InsufficientFunds"
         "429":
           $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-        default:
+        "4XX":
           $ref: "#/components/responses/CustomServiceError"
+        "5XX":
+          $ref: "#/components/responses/InternalServerError"
 
   /publish:
     post:
@@ -186,18 +184,14 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/TopicNotFound"
-        "409":
+        "402":
           $ref: "#/components/responses/InsufficientFunds"
-        "413":
-          $ref: "#/components/responses/MessageTooBig"
         "429":
           $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-        default:
+        "4XX":
           $ref: "#/components/responses/CustomServiceError"
+        "5XX":
+          $ref: "#/components/responses/InternalServerError"
 
   /read:
     get:
@@ -217,16 +211,14 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/TopicNotFound"
-        "409":
+        "402":
           $ref: "#/components/responses/InsufficientFunds"
         "429":
           $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-        default:
+        "4XX":
           $ref: "#/components/responses/CustomServiceError"
+        "5XX":
+          $ref: "#/components/responses/InternalServerError"
 
   /read-all:
     get:
@@ -247,14 +239,14 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "409":
+        "402":
           $ref: "#/components/responses/InsufficientFunds"
         "429":
           $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-        default:
+        "4XX":
           $ref: "#/components/responses/CustomServiceError"
+        "5XX":
+          $ref: "#/components/responses/InternalServerError"
 
   /filter-peerid:
     post:
@@ -270,16 +262,14 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/TopicNotFound"
-        "409":
+        "402":
           $ref: "#/components/responses/InsufficientFunds"
         "429":
           $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-        default:
+        "4XX":
           $ref: "#/components/responses/CustomServiceError"
+        "5XX":
+          $ref: "#/components/responses/InternalServerError"
 
   /list:
     get:
@@ -300,14 +290,14 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "409":
+        "402":
           $ref: "#/components/responses/InsufficientFunds"
         "429":
           $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-        default:
+        "4XX":
           $ref: "#/components/responses/CustomServiceError"
+        "5XX":
+          $ref: "#/components/responses/InternalServerError"
 
 components:
   schemas:
