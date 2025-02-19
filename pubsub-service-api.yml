@@ -83,6 +83,7 @@ servers:
 paths:
   /discovery:
     get:
+      operationId: discovery
       summary: Describe the service configuration and limits
       description: "Describe the service configuration and limits.
       
@@ -109,6 +110,7 @@ paths:
 
   /join:
     post:
+      operationId: join
       summary: Subscribe to a pubsub topic and signal liveness
       description: "Subscribe to a pubsub topic.
       
@@ -145,6 +147,7 @@ paths:
 
   /leave:
     post:
+      operationId: leave
       summary: Unsubscribe from a pubsub topic
       description: Unsubscribe from a pubsub topic, and destroy any stored message for that topic.
       parameters:
@@ -167,6 +170,7 @@ paths:
 
   /publish:
     post:
+      operationId: publish
       summary: Publish a message in a pubsub topic and signal liveness
       parameters:
         - $ref: "#/components/parameters/topic"
@@ -195,6 +199,7 @@ paths:
 
   /read:
     get:
+      operationId: read
       summary: Read message from a pubsub topic and signal liveness. This consumes the returned messages from the queue
       parameters:
         - $ref: "#/components/parameters/topic"
@@ -222,6 +227,7 @@ paths:
 
   /read-all:
     get:
+      operationId: readAll
       summary: Read messages from multiple topic at once and signal liveness. This consumes the returned messages from the queue.
       parameters:
         - $ref: "#/components/parameters/max-messages"
@@ -250,6 +256,7 @@ paths:
 
   /filter-peerid:
     post:
+      operationId: filterPeerID
       summary: Instruct the service about read messages that the client side consider bogus or malicious.
       description: One necessary component of pubsub is message filtering. This could be required for various reasons, ranging from technical (re-broadcasted message, maximum size ...) to malicious (spam, abuse ..). Some of those, the most generic, are expected to be handled by the service. On the other side of the spectrum, application logic and data is required to evaluate the validity of a message. This endpoint exist so that client can provide that feedback, which will allow the service to filter messages or prune bad peers.
       parameters:
@@ -273,6 +280,7 @@ paths:
 
   /list:
     get:
+      operationId: list
       summary: List subscribed topics
       parameters:
         - $ref: "#/components/parameters/filter-prefix"
