@@ -75,3 +75,10 @@ Which endpoint to use is up to the client. For example, a client that does read 
 ## Multi-Tenant Considerations
 
 This specification doesn't enforce anything about how multi-tenancy should be implemented. It is however expected that an authentication layer (BasicAuth, OAuth, UCAN ...) may be added, which should provide the relevant client identifier to return the appropriate responses for that specific client. This is however not a requirement, as an implementation could serve a single client without authentication.
+
+## Generating Code From Spec
+### Go Server
+```
+oapi-codegen -config oapi-codegen-server.yaml pubsub-service-api.yml
+oapi-codegen -config oapi-codegen-types.yaml pubsub-service-api.yml
+```

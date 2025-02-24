@@ -161,6 +161,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/InsufficientFunds"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "4XX":
@@ -177,10 +179,9 @@ paths:
       requestBody:
         required: true
         content:
-          application/octet-stream:
+          application/json:
             schema:
-              type: string
-              format: binary
+              $ref: "#/components/schemas/MessageProperty"
       responses:
         "200":
           description: "Message published successfully."
@@ -190,6 +191,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/InsufficientFunds"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
+        "413":
+          $ref: "#/components/responses/MessageTooBig"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "4XX":
@@ -218,6 +223,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/InsufficientFunds"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "4XX":
@@ -247,6 +254,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/InsufficientFunds"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "4XX":
@@ -271,6 +280,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/InsufficientFunds"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "4XX":
@@ -457,33 +468,35 @@ components:
       format: int32
       minimum: 0
       example: 7
+    MessageProperty:
+      type: object
+      required:
+        - from
+        - data
+      properties:
+        data:
+          description: "The content encoded with base64 standard alphabet with padding."
+          type: string
+          example: "YWJj"
+        from:
+          description: "The peer ID of the sender."
+          type: string
+          example: "QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv"
+        pubkey:
+          description: "The sender's public key encoded with base64 standard alphabet with padding in X.509 DER format."
+          type: string
+          format: byte
+          example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
+        signature:
+          description: "The signature for the message."
+          type: string
+          format: byte
+          example: "An7j/dPng3efQoyBMiFy/owSc5kb4pVteI9BZEdL67Krt/W4zEUidKuTi67X580p5dqrd/y04iODgZ99/6sMxb6/7h0++K/M9jkVr2544+0GT5I7fozyPZavbL5bMTy5azeWpZMgI8PiaPJChkHOaRelc7fuqeVB/lIds0ojUhBASOdReNOOMXMvhMjwe/Hh+jACXlJK0SraBV5UET4SPqy/NBhdYdkDOmoB7E2EWHWx6QQk80WPVEAZsKyVkCTz2QT3Hzb4HRxMpLYZ41ZeDggkWtnkG62X6faTX33tBwiCtO2Xac0awf56PxEeXCXhYBwi04Sk2HtV5GBo7gPeCw=="
     MessagesProperty:
       description: "An array of messages that have been read."
       type: array
       items:
-        type: object
-        required:
-          - from
-          - data
-        properties:
-          from:
-            description: "The peer ID of the sender."
-            type: string
-            example: "QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv"
-          data:
-            description: "The content encoded with base64 standard alphabet with padding."
-            type: string
-            example: "YWJj"
-          pubkey:
-            description: "The sender's public key encoded with base64 standard alphabet with padding in X.509 DER format."
-            type: string
-            format: byte
-            example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
-          signature:
-            description: "The signature for the message."
-            type: string
-            format: byte
-            example: "An7j/dPng3efQoyBMiFy/owSc5kb4pVteI9BZEdL67Krt/W4zEUidKuTi67X580p5dqrd/y04iODgZ99/6sMxb6/7h0++K/M9jkVr2544+0GT5I7fozyPZavbL5bMTy5azeWpZMgI8PiaPJChkHOaRelc7fuqeVB/lIds0ojUhBASOdReNOOMXMvhMjwe/Hh+jACXlJK0SraBV5UET4SPqy/NBhdYdkDOmoB7E2EWHWx6QQk80WPVEAZsKyVkCTz2QT3Hzb4HRxMpLYZ41ZeDggkWtnkG62X6faTX33tBwiCtO2Xac0awf56PxEeXCXhYBwi04Sk2HtV5GBo7gPeCw=="
+        $ref: "#/components/schemas/MessageProperty"
     TopicProperty:
       description: "The name of the pubsub topic."
       type: string
