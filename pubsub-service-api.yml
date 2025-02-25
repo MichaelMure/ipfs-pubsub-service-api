@@ -363,7 +363,7 @@ components:
         messages-remaining:
           $ref: "#/components/schemas/MessagesRemainingProperty"
         messages:
-          $ref: "#/components/schemas/MessagesProperty"
+          $ref: "#/components/schemas/ReadMessagesProperty"
     ReadAllResponse:
       description: "Response schema for the /read-all endpoint."
       type: array
@@ -382,7 +382,7 @@ components:
           messages-remaining:
             $ref: "#/components/schemas/MessagesRemainingProperty"
           messages:
-            $ref: "#/components/schemas/MessagesProperty"
+            $ref: "#/components/schemas/ReadMessagesProperty"
     ListResponse:
       description: "Response schema for the /list endpoint."
       type: array
@@ -520,7 +520,7 @@ components:
           type: string
           format: byte
           example: "An7j/dPng3efQoyBMiFy/owSc5kb4pVteI9BZEdL67Krt/W4zEUidKuTi67X580p5dqrd/y04iODgZ99/6sMxb6/7h0++K/M9jkVr2544+0GT5I7fozyPZavbL5bMTy5azeWpZMgI8PiaPJChkHOaRelc7fuqeVB/lIds0ojUhBASOdReNOOMXMvhMjwe/Hh+jACXlJK0SraBV5UET4SPqy/NBhdYdkDOmoB7E2EWHWx6QQk80WPVEAZsKyVkCTz2QT3Hzb4HRxMpLYZ41ZeDggkWtnkG62X6faTX33tBwiCtO2Xac0awf56PxEeXCXhYBwi04Sk2HtV5GBo7gPeCw=="
-    MessagesProperty:
+    ReadMessagesProperty:
       description: "An array of messages that have been read."
       type: array
       items:
