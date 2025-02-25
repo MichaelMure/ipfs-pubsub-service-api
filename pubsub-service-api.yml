@@ -471,7 +471,6 @@ components:
     MessageProperty:
       type: object
       required:
-        - from
         - data
       properties:
         data:
