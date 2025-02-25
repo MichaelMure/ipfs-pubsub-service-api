@@ -45,7 +45,7 @@ We now can publish a message, by passing it as the body of the following request
 
 We can read messages in the queue:
 
-`GET /read?topic=foo&count=2`
+`POST /read?topic=foo&count=2`
 
 Here, we ask for a maximum of 2 messages. The service returns them, and inform us that there is 8 more in the queue, and that 2 have been dropped due to the queue filling up:
 
