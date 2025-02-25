@@ -478,16 +478,18 @@ components:
           type: string
           example: "YWJj"
         from:
-          description: "The peer ID of the sender."
+          description: "The peer ID of the sender. If not set, the client doesn't control the author of the message and the server will sign the message on behalf of the client."
           type: string
           example: "QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv"
         pubkey:
-          description: "The sender's public key encoded with base64 standard alphabet with padding in X.509 DER format."
+          description: |
+            The sender's public key encoded with base64 standard alphabet with padding in X.509 DER format.
+            This should be set if `from` is used and the pubkey can't be extracted from `from` or `pubkey`. For example with a Ed25519 or Secp256k1 peerID, the public key can be extracted. With ECDSA, the pubkey can be extracted from the signature and can also be omitted. On the other hand, none of that is possible with RSA and `pubkey` should be set if `from` is used.
           type: string
           format: byte
           example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
         signature:
-          description: "The signature for the message."
+          description: "The signature for the message. This should be set if `from` is used."
           type: string
           format: byte
           example: "An7j/dPng3efQoyBMiFy/owSc5kb4pVteI9BZEdL67Krt/W4zEUidKuTi67X580p5dqrd/y04iODgZ99/6sMxb6/7h0++K/M9jkVr2544+0GT5I7fozyPZavbL5bMTy5azeWpZMgI8PiaPJChkHOaRelc7fuqeVB/lIds0ojUhBASOdReNOOMXMvhMjwe/Hh+jACXlJK0SraBV5UET4SPqy/NBhdYdkDOmoB7E2EWHWx6QQk80WPVEAZsKyVkCTz2QT3Hzb4HRxMpLYZ41ZeDggkWtnkG62X6faTX33tBwiCtO2Xac0awf56PxEeXCXhYBwi04Sk2HtV5GBo7gPeCw=="
@@ -506,12 +508,15 @@ components:
           type: string
           example: "QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv"
         pubkey:
-          description: "The sender's public key encoded with base64 standard alphabet with padding in X.509 DER format."
+          description: |
+            The sender's public key encoded with base64 standard alphabet with padding in X.509 DER format.
+            If `include-signature` is not used, this should not be populated.
+            If the pubkey can be extracted from either `from` or `signature`, this should not be populated. For example with a Ed25519 or Secp256k1 peerID, the public key can be extracted. With ECDSA, the pubkey can be extracted from the signature and can also be omitted. On the other hand, none of that is possible with RSA and `pubkey` should be set if `include-signature` is used.
           type: string
           format: byte
           example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
         signature:
-          description: "The signature for the message."
+          description: "The signature for the message. If `include-signature` is not used, this should not be populated."
           type: string
           format: byte
           example: "An7j/dPng3efQoyBMiFy/owSc5kb4pVteI9BZEdL67Krt/W4zEUidKuTi67X580p5dqrd/y04iODgZ99/6sMxb6/7h0++K/M9jkVr2544+0GT5I7fozyPZavbL5bMTy5azeWpZMgI8PiaPJChkHOaRelc7fuqeVB/lIds0ojUhBASOdReNOOMXMvhMjwe/Hh+jACXlJK0SraBV5UET4SPqy/NBhdYdkDOmoB7E2EWHWx6QQk80WPVEAZsKyVkCTz2QT3Hzb4HRxMpLYZ41ZeDggkWtnkG62X6faTX33tBwiCtO2Xac0awf56PxEeXCXhYBwi04Sk2HtV5GBo7gPeCw=="
