@@ -82,3 +82,9 @@ This specification doesn't enforce anything about how multi-tenancy should be im
 oapi-codegen -config oapi-codegen-server.yaml pubsub-service-api.yml
 oapi-codegen -config oapi-codegen-types.yaml pubsub-service-api.yml
 ```
+
+### JS Client
+Install `openapi-generator` and run:
+```
+openapi-generator generate -i pubsub-service-api.yml -g javascript -o ./pubsub-gen-js
+```
