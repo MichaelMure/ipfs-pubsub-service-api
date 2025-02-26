@@ -472,6 +472,11 @@ components:
       format: int32
       minimum: 0
       example: 7
+    PubKeyProperty:
+      description: The public key encoded with base64 standard alphabet with padding in X.509 DER format.
+      type: string
+      format: byte
+      example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
     PublishMessageProperty:
       type: object
       required:
@@ -528,9 +533,7 @@ components:
         If the pubkey can be extracted from either `from` or `signature` in `ReadMessageProperty`, it should not be part of this list. For example with a Ed25519 or Secp256k1 peerID, the public key can be extracted. With ECDSA, the pubkey can be extracted from the signature and can also be omitted. On the other hand, none of that is possible with RSA and `pubkey` should be set if `include-signature` is used.
       type: object
       additionalProperties:
-        description: The sender's public key encoded with base64 standard alphabet with padding in X.509 DER format.
-        format: byte
-        example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
+        $ref: "#/components/schemas/PubKeyProperty"
       example:
         QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
     TopicProperty:
