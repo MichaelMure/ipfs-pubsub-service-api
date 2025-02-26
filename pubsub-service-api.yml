@@ -46,7 +46,7 @@ info:
     
     We can read messages in the queue:
     
-    `GET /read?topic=foo&count=2`
+    `POST /read?topic=foo&count=2`
     
     Here, we ask for a maximum of 2 messages. The service returns them, and inform us that there is 8 more in the queue, and that 2 have been dropped due to the queue filling up:
     
@@ -161,6 +161,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/InsufficientFunds"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "4XX":
@@ -177,10 +179,9 @@ paths:
       requestBody:
         required: true
         content:
-          application/octet-stream:
+          application/json:
             schema:
-              type: string
-              format: binary
+              $ref: "#/components/schemas/PublishMessageProperty"
       responses:
         "200":
           description: "Message published successfully."
@@ -190,6 +191,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/InsufficientFunds"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
+        "413":
+          $ref: "#/components/responses/MessageTooBig"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "4XX":
@@ -198,7 +203,7 @@ paths:
           $ref: "#/components/responses/InternalServerError"
 
   /read:
-    get:
+    post:
       operationId: read
       summary: Read message from a pubsub topic and signal liveness. This consumes the returned messages from the queue
       parameters:
@@ -218,6 +223,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/InsufficientFunds"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "4XX":
@@ -226,7 +233,7 @@ paths:
           $ref: "#/components/responses/InternalServerError"
 
   /read-all:
-    get:
+    post:
       operationId: readAll
       summary: Read messages from multiple topic at once and signal liveness. This consumes the returned messages from the queue.
       parameters:
@@ -247,6 +254,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/InsufficientFunds"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "4XX":
@@ -271,6 +280,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/InsufficientFunds"
+        "404":
+          $ref: "#/components/responses/TopicNotFound"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "4XX":
@@ -352,7 +363,9 @@ components:
         messages-remaining:
           $ref: "#/components/schemas/MessagesRemainingProperty"
         messages:
-          $ref: "#/components/schemas/MessagesProperty"
+          $ref: "#/components/schemas/ReadMessagesProperty"
+        pubkeys:
+          $ref: "#/components/schemas/PubKeysProperty"
     ReadAllResponse:
       description: "Response schema for the /read-all endpoint."
       type: array
@@ -371,7 +384,9 @@ components:
           messages-remaining:
             $ref: "#/components/schemas/MessagesRemainingProperty"
           messages:
-            $ref: "#/components/schemas/MessagesProperty"
+            $ref: "#/components/schemas/ReadMessagesProperty"
+          pubkeys:
+            $ref: "#/components/schemas/PubKeysProperty"
     ListResponse:
       description: "Response schema for the /list endpoint."
       type: array
@@ -457,33 +472,70 @@ components:
       format: int32
       minimum: 0
       example: 7
-    MessagesProperty:
+    PubKeyProperty:
+      description: The public key encoded with base64 standard alphabet with padding in X.509 DER format.
+      type: string
+      format: byte
+      example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
+    PublishMessageProperty:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          description: "The content encoded with base64 standard alphabet with padding."
+          type: string
+          example: "YWJj"
+        from:
+          description: "The peer ID of the sender. If not set, the client doesn't control the author of the message and the server will sign the message on behalf of the client."
+          type: string
+          example: "QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv"
+        pubkey:
+          description: |
+            The sender's public key encoded with base64 standard alphabet with padding in X.509 DER format.
+            This should be set if `from` is used and the pubkey can't be extracted from `from` or `pubkey`. For example with a Ed25519 or Secp256k1 peerID, the public key can be extracted. With ECDSA, the pubkey can be extracted from the signature and can also be omitted. On the other hand, none of that is possible with RSA and `pubkey` should be set if `from` is used.
+          type: string
+          format: byte
+          example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
+        signature:
+          description: "The signature for the message. This should be set if `from` is used."
+          type: string
+          format: byte
+          example: "An7j/dPng3efQoyBMiFy/owSc5kb4pVteI9BZEdL67Krt/W4zEUidKuTi67X580p5dqrd/y04iODgZ99/6sMxb6/7h0++K/M9jkVr2544+0GT5I7fozyPZavbL5bMTy5azeWpZMgI8PiaPJChkHOaRelc7fuqeVB/lIds0ojUhBASOdReNOOMXMvhMjwe/Hh+jACXlJK0SraBV5UET4SPqy/NBhdYdkDOmoB7E2EWHWx6QQk80WPVEAZsKyVkCTz2QT3Hzb4HRxMpLYZ41ZeDggkWtnkG62X6faTX33tBwiCtO2Xac0awf56PxEeXCXhYBwi04Sk2HtV5GBo7gPeCw=="
+    ReadMessagesProperty:
       description: "An array of messages that have been read."
       type: array
       items:
-        type: object
-        required:
-          - from
-          - data
-        properties:
-          from:
-            description: "The peer ID of the sender."
-            type: string
-            example: "QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv"
-          data:
-            description: "The content encoded with base64 standard alphabet with padding."
-            type: string
-            example: "YWJj"
-          pubkey:
-            description: "The sender's public key encoded with base64 standard alphabet with padding in X.509 DER format."
-            type: string
-            format: byte
-            example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
-          signature:
-            description: "The signature for the message."
-            type: string
-            format: byte
-            example: "An7j/dPng3efQoyBMiFy/owSc5kb4pVteI9BZEdL67Krt/W4zEUidKuTi67X580p5dqrd/y04iODgZ99/6sMxb6/7h0++K/M9jkVr2544+0GT5I7fozyPZavbL5bMTy5azeWpZMgI8PiaPJChkHOaRelc7fuqeVB/lIds0ojUhBASOdReNOOMXMvhMjwe/Hh+jACXlJK0SraBV5UET4SPqy/NBhdYdkDOmoB7E2EWHWx6QQk80WPVEAZsKyVkCTz2QT3Hzb4HRxMpLYZ41ZeDggkWtnkG62X6faTX33tBwiCtO2Xac0awf56PxEeXCXhYBwi04Sk2HtV5GBo7gPeCw=="
+        $ref: "#/components/schemas/ReadMessageProperty"
+    ReadMessageProperty:
+      type: object
+      required:
+        - from
+        - data
+      properties:
+        data:
+          description: "The content encoded with base64 standard alphabet with padding."
+          type: string
+          example: "YWJj"
+        from:
+          description: "The peer ID of the sender."
+          type: string
+          example: "QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv"
+        signature:
+          description: "The signature for the message. If `include-signature` is not used, this should not be populated."
+          type: string
+          format: byte
+          example: "An7j/dPng3efQoyBMiFy/owSc5kb4pVteI9BZEdL67Krt/W4zEUidKuTi67X580p5dqrd/y04iODgZ99/6sMxb6/7h0++K/M9jkVr2544+0GT5I7fozyPZavbL5bMTy5azeWpZMgI8PiaPJChkHOaRelc7fuqeVB/lIds0ojUhBASOdReNOOMXMvhMjwe/Hh+jACXlJK0SraBV5UET4SPqy/NBhdYdkDOmoB7E2EWHWx6QQk80WPVEAZsKyVkCTz2QT3Hzb4HRxMpLYZ41ZeDggkWtnkG62X6faTX33tBwiCtO2Xac0awf56PxEeXCXhYBwi04Sk2HtV5GBo7gPeCw=="
+    PubKeysProperty:
+      description: |
+        A set of cryptographic public keys, one per peerID from.
+        If `include-signature` is not used, this should not be populated.
+        If the pubkey can be extracted from either `from` or `signature` in `ReadMessageProperty`, it should not be part of this list. For example with a Ed25519 or Secp256k1 peerID, the public key can be extracted. With ECDSA, the pubkey can be extracted from the signature and can also be omitted. On the other hand, none of that is possible with RSA and `pubkey` should be set if `include-signature` is used.
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/PubKeyProperty"
+      example:
+        QmcXhKGEAJT9DwwzKeEZsWrYTTGkzBdgeKif2MdAXBswJv: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmreiLkzVz2qlc2a4z8FbdUTzvka3vQVqPX0QRqr+Lgb6NOw0RVR8WTySavlg8zjOqgyRcEXMvmL1R34jMped68SBaRUyBBmvhT8ptzOZhZdSB4PPRwAfhILWyHnUm9JBPEmjN+Xi9wNt0WH8ds5S+RRnBoD1BagVxAykzjCJnZzAtKQYiU4jIG8zm7jwaWTZjukKaVsHAY7kjPF/8i2u3u+xltKGXYCwKbg621fTaEKBzC2mQORod9fw0qLhrOT/N1CuC5xCrlqvaDv8J4yKvJMd6XBG3lcsP/yhcCw9FjHdpolsRsomeSofvl7/OdaPMDimpdT012ohZAmPntUyNQIDAQAB"
     TopicProperty:
       description: "The name of the pubsub topic."
       type: string
