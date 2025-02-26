@@ -12,25 +12,25 @@
  */
 
 import ApiClient from '../ApiClient';
-import MessageProperty from './MessageProperty';
+import ReadMessageProperty from './ReadMessageProperty';
 
 /**
- * The ReadResponse model module.
- * @module model/ReadResponse
+ * The ReadAllResponseInner model module.
+ * @module model/ReadAllResponseInner
  * @version 1.0.0
  */
-class ReadResponse {
+class ReadAllResponseInner {
     /**
-     * Constructs a new <code>ReadResponse</code>.
-     * Response schema for the /read endpoint.
-     * @alias module:model/ReadResponse
+     * Constructs a new <code>ReadAllResponseInner</code>.
+     * @alias module:model/ReadAllResponseInner
+     * @param topic {String} The name of the pubsub topic.
      * @param messagesDropped {Number} The number of messages dropped due to queue capacity constraints.
      * @param messagesRemaining {Number} The number of messages remaining in the queue.
-     * @param messages {Array.<module:model/MessageProperty>} An array of messages that have been read.
+     * @param messages {Array.<module:model/ReadMessageProperty>} An array of messages that have been read.
      */
-    constructor(messagesDropped, messagesRemaining, messages) { 
+    constructor(topic, messagesDropped, messagesRemaining, messages) { 
         
-        ReadResponse.initialize(this, messagesDropped, messagesRemaining, messages);
+        ReadAllResponseInner.initialize(this, topic, messagesDropped, messagesRemaining, messages);
     }
 
     /**
@@ -38,23 +38,27 @@ class ReadResponse {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, messagesDropped, messagesRemaining, messages) { 
+    static initialize(obj, topic, messagesDropped, messagesRemaining, messages) { 
+        obj['topic'] = topic;
         obj['messages-dropped'] = messagesDropped;
         obj['messages-remaining'] = messagesRemaining;
         obj['messages'] = messages;
     }
 
     /**
-     * Constructs a <code>ReadResponse</code> from a plain JavaScript object, optionally creating a new instance.
+     * Constructs a <code>ReadAllResponseInner</code> from a plain JavaScript object, optionally creating a new instance.
      * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
      * @param {Object} data The plain JavaScript object bearing properties of interest.
-     * @param {module:model/ReadResponse} obj Optional instance to populate.
-     * @return {module:model/ReadResponse} The populated <code>ReadResponse</code> instance.
+     * @param {module:model/ReadAllResponseInner} obj Optional instance to populate.
+     * @return {module:model/ReadAllResponseInner} The populated <code>ReadAllResponseInner</code> instance.
      */
     static constructFromObject(data, obj) {
         if (data) {
-            obj = obj || new ReadResponse();
+            obj = obj || new ReadAllResponseInner();
 
+            if (data.hasOwnProperty('topic')) {
+                obj['topic'] = ApiClient.convertToType(data['topic'], 'String');
+            }
             if (data.hasOwnProperty('messages-dropped')) {
                 obj['messages-dropped'] = ApiClient.convertToType(data['messages-dropped'], 'Number');
             }
@@ -62,23 +66,30 @@ class ReadResponse {
                 obj['messages-remaining'] = ApiClient.convertToType(data['messages-remaining'], 'Number');
             }
             if (data.hasOwnProperty('messages')) {
-                obj['messages'] = ApiClient.convertToType(data['messages'], [MessageProperty]);
+                obj['messages'] = ApiClient.convertToType(data['messages'], [ReadMessageProperty]);
+            }
+            if (data.hasOwnProperty('pubkeys')) {
+                obj['pubkeys'] = ApiClient.convertToType(data['pubkeys'], {'String': 'Blob'});
             }
         }
         return obj;
     }
 
     /**
-     * Validates the JSON data with respect to <code>ReadResponse</code>.
+     * Validates the JSON data with respect to <code>ReadAllResponseInner</code>.
      * @param {Object} data The plain JavaScript object bearing properties of interest.
-     * @return {boolean} to indicate whether the JSON data is valid with respect to <code>ReadResponse</code>.
+     * @return {boolean} to indicate whether the JSON data is valid with respect to <code>ReadAllResponseInner</code>.
      */
     static validateJSON(data) {
         // check to make sure all required properties are present in the JSON string
-        for (const property of ReadResponse.RequiredProperties) {
+        for (const property of ReadAllResponseInner.RequiredProperties) {
             if (!data.hasOwnProperty(property)) {
                 throw new Error("The required field `" + property + "` is not found in the JSON data: " + JSON.stringify(data));
             }
+        }
+        // ensure the json data is a string
+        if (data['topic'] && !(typeof data['topic'] === 'string' || data['topic'] instanceof String)) {
+            throw new Error("Expected the field `topic` to be a primitive type in the JSON string but got " + data['topic']);
         }
         if (data['messages']) { // data not null
             // ensure the json data is an array
@@ -87,7 +98,7 @@ class ReadResponse {
             }
             // validate the optional field `messages` (array)
             for (const item of data['messages']) {
-                MessageProperty.validateJSON(item);
+                ReadMessageProperty.validateJSON(item);
             };
         }
 
@@ -97,30 +108,42 @@ class ReadResponse {
 
 }
 
-ReadResponse.RequiredProperties = ["messages-dropped", "messages-remaining", "messages"];
+ReadAllResponseInner.RequiredProperties = ["topic", "messages-dropped", "messages-remaining", "messages"];
+
+/**
+ * The name of the pubsub topic.
+ * @member {String} topic
+ */
+ReadAllResponseInner.prototype['topic'] = undefined;
 
 /**
  * The number of messages dropped due to queue capacity constraints.
  * @member {Number} messages-dropped
  */
-ReadResponse.prototype['messages-dropped'] = undefined;
+ReadAllResponseInner.prototype['messages-dropped'] = undefined;
 
 /**
  * The number of messages remaining in the queue.
  * @member {Number} messages-remaining
  */
-ReadResponse.prototype['messages-remaining'] = undefined;
+ReadAllResponseInner.prototype['messages-remaining'] = undefined;
 
 /**
  * An array of messages that have been read.
- * @member {Array.<module:model/MessageProperty>} messages
+ * @member {Array.<module:model/ReadMessageProperty>} messages
  */
-ReadResponse.prototype['messages'] = undefined;
+ReadAllResponseInner.prototype['messages'] = undefined;
+
+/**
+ * A set of cryptographic public keys, one per peerID from. If `include-signature` is not used, this should not be populated. If the pubkey can be extracted from either `from` or `signature` in `ReadMessageProperty`, it should not be part of this list. For example with a Ed25519 or Secp256k1 peerID, the public key can be extracted. With ECDSA, the pubkey can be extracted from the signature and can also be omitted. On the other hand, none of that is possible with RSA and `pubkey` should be set if `include-signature` is used. 
+ * @member {Object.<String, Blob>} pubkeys
+ */
+ReadAllResponseInner.prototype['pubkeys'] = undefined;
 
 
 
 
 
 
-export default ReadResponse;
+export default ReadAllResponseInner;
 

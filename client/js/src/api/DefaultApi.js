@@ -17,7 +17,7 @@ import DiscoveryResponse from '../model/DiscoveryResponse';
 import Failure from '../model/Failure';
 import JoinResponse from '../model/JoinResponse';
 import ListResponseInner from '../model/ListResponseInner';
-import MessageProperty from '../model/MessageProperty';
+import PublishMessageProperty from '../model/PublishMessageProperty';
 import ReadAllResponseInner from '../model/ReadAllResponseInner';
 import ReadResponse from '../model/ReadResponse';
 
@@ -277,18 +277,18 @@ export default class DefaultApi {
     /**
      * Publish a message in a pubsub topic and signal liveness
      * @param {String} topic The name of the pubsub topic.
-     * @param {module:model/MessageProperty} messageProperty 
+     * @param {module:model/PublishMessageProperty} publishMessageProperty 
      * @param {module:api/DefaultApi~publishCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    publish(topic, messageProperty, callback) {
-      let postBody = messageProperty;
+    publish(topic, publishMessageProperty, callback) {
+      let postBody = publishMessageProperty;
       // verify the required parameter 'topic' is set
       if (topic === undefined || topic === null) {
         throw new Error("Missing the required parameter 'topic' when calling publish");
       }
-      // verify the required parameter 'messageProperty' is set
-      if (messageProperty === undefined || messageProperty === null) {
-        throw new Error("Missing the required parameter 'messageProperty' when calling publish");
+      // verify the required parameter 'publishMessageProperty' is set
+      if (publishMessageProperty === undefined || publishMessageProperty === null) {
+        throw new Error("Missing the required parameter 'publishMessageProperty' when calling publish");
       }
 
       let pathParams = {

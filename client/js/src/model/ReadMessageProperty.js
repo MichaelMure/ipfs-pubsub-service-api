@@ -14,19 +14,20 @@
 import ApiClient from '../ApiClient';
 
 /**
- * The MessageProperty model module.
- * @module model/MessageProperty
+ * The ReadMessageProperty model module.
+ * @module model/ReadMessageProperty
  * @version 1.0.0
  */
-class MessageProperty {
+class ReadMessageProperty {
     /**
-     * Constructs a new <code>MessageProperty</code>.
-     * @alias module:model/MessageProperty
+     * Constructs a new <code>ReadMessageProperty</code>.
+     * @alias module:model/ReadMessageProperty
      * @param data {String} The content encoded with base64 standard alphabet with padding.
+     * @param from {String} The peer ID of the sender.
      */
-    constructor(data) { 
+    constructor(data, from) { 
         
-        MessageProperty.initialize(this, data);
+        ReadMessageProperty.initialize(this, data, from);
     }
 
     /**
@@ -34,29 +35,27 @@ class MessageProperty {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, data) { 
+    static initialize(obj, data, from) { 
         obj['data'] = data;
+        obj['from'] = from;
     }
 
     /**
-     * Constructs a <code>MessageProperty</code> from a plain JavaScript object, optionally creating a new instance.
+     * Constructs a <code>ReadMessageProperty</code> from a plain JavaScript object, optionally creating a new instance.
      * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
      * @param {Object} data The plain JavaScript object bearing properties of interest.
-     * @param {module:model/MessageProperty} obj Optional instance to populate.
-     * @return {module:model/MessageProperty} The populated <code>MessageProperty</code> instance.
+     * @param {module:model/ReadMessageProperty} obj Optional instance to populate.
+     * @return {module:model/ReadMessageProperty} The populated <code>ReadMessageProperty</code> instance.
      */
     static constructFromObject(data, obj) {
         if (data) {
-            obj = obj || new MessageProperty();
+            obj = obj || new ReadMessageProperty();
 
             if (data.hasOwnProperty('data')) {
                 obj['data'] = ApiClient.convertToType(data['data'], 'String');
             }
             if (data.hasOwnProperty('from')) {
                 obj['from'] = ApiClient.convertToType(data['from'], 'String');
-            }
-            if (data.hasOwnProperty('pubkey')) {
-                obj['pubkey'] = ApiClient.convertToType(data['pubkey'], 'Blob');
             }
             if (data.hasOwnProperty('signature')) {
                 obj['signature'] = ApiClient.convertToType(data['signature'], 'Blob');
@@ -66,13 +65,13 @@ class MessageProperty {
     }
 
     /**
-     * Validates the JSON data with respect to <code>MessageProperty</code>.
+     * Validates the JSON data with respect to <code>ReadMessageProperty</code>.
      * @param {Object} data The plain JavaScript object bearing properties of interest.
-     * @return {boolean} to indicate whether the JSON data is valid with respect to <code>MessageProperty</code>.
+     * @return {boolean} to indicate whether the JSON data is valid with respect to <code>ReadMessageProperty</code>.
      */
     static validateJSON(data) {
         // check to make sure all required properties are present in the JSON string
-        for (const property of MessageProperty.RequiredProperties) {
+        for (const property of ReadMessageProperty.RequiredProperties) {
             if (!data.hasOwnProperty(property)) {
                 throw new Error("The required field `" + property + "` is not found in the JSON data: " + JSON.stringify(data));
             }
@@ -92,36 +91,30 @@ class MessageProperty {
 
 }
 
-MessageProperty.RequiredProperties = ["data"];
+ReadMessageProperty.RequiredProperties = ["data", "from"];
 
 /**
  * The content encoded with base64 standard alphabet with padding.
  * @member {String} data
  */
-MessageProperty.prototype['data'] = undefined;
+ReadMessageProperty.prototype['data'] = undefined;
 
 /**
  * The peer ID of the sender.
  * @member {String} from
  */
-MessageProperty.prototype['from'] = undefined;
+ReadMessageProperty.prototype['from'] = undefined;
 
 /**
- * The sender's public key encoded with base64 standard alphabet with padding in X.509 DER format.
- * @member {Blob} pubkey
- */
-MessageProperty.prototype['pubkey'] = undefined;
-
-/**
- * The signature for the message.
+ * The signature for the message. If `include-signature` is not used, this should not be populated.
  * @member {Blob} signature
  */
-MessageProperty.prototype['signature'] = undefined;
+ReadMessageProperty.prototype['signature'] = undefined;
 
 
 
 
 
 
-export default MessageProperty;
+export default ReadMessageProperty;
 

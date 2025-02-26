@@ -256,7 +256,7 @@ No authorization required
 
 ## publish
 
-> publish(topic, messageProperty)
+> publish(topic, publishMessageProperty)
 
 Publish a message in a pubsub topic and signal liveness
 
@@ -267,8 +267,8 @@ import PubsubServiceApi from 'pubsub_service_api';
 
 let apiInstance = new PubsubServiceApi.DefaultApi();
 let topic = "foo"; // String | The name of the pubsub topic.
-let messageProperty = new PubsubServiceApi.MessageProperty(); // MessageProperty | 
-apiInstance.publish(topic, messageProperty, (error, data, response) => {
+let publishMessageProperty = new PubsubServiceApi.PublishMessageProperty(); // PublishMessageProperty | 
+apiInstance.publish(topic, publishMessageProperty, (error, data, response) => {
   if (error) {
     console.error(error);
   } else {
@@ -283,7 +283,7 @@ apiInstance.publish(topic, messageProperty, (error, data, response) => {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **topic** | **String**| The name of the pubsub topic. | 
- **messageProperty** | [**MessageProperty**](MessageProperty.md)|  | 
+ **publishMessageProperty** | [**PublishMessageProperty**](PublishMessageProperty.md)|  | 
 
 ### Return type
 

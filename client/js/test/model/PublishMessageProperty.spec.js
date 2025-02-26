@@ -28,7 +28,7 @@
   var instance;
 
   beforeEach(function() {
-    instance = new PubsubServiceApi.MessageProperty();
+    instance = new PubsubServiceApi.PublishMessageProperty();
   });
 
   var getProperty = function(object, getter, property) {
@@ -47,34 +47,34 @@
       object[property] = value;
   }
 
-  describe('MessageProperty', function() {
-    it('should create an instance of MessageProperty', function() {
-      // uncomment below and update the code to test MessageProperty
-      //var instance = new PubsubServiceApi.MessageProperty();
-      //expect(instance).to.be.a(PubsubServiceApi.MessageProperty);
+  describe('PublishMessageProperty', function() {
+    it('should create an instance of PublishMessageProperty', function() {
+      // uncomment below and update the code to test PublishMessageProperty
+      //var instance = new PubsubServiceApi.PublishMessageProperty();
+      //expect(instance).to.be.a(PubsubServiceApi.PublishMessageProperty);
     });
 
     it('should have the property data (base name: "data")', function() {
       // uncomment below and update the code to test the property data
-      //var instance = new PubsubServiceApi.MessageProperty();
+      //var instance = new PubsubServiceApi.PublishMessageProperty();
       //expect(instance).to.be();
     });
 
     it('should have the property from (base name: "from")', function() {
       // uncomment below and update the code to test the property from
-      //var instance = new PubsubServiceApi.MessageProperty();
+      //var instance = new PubsubServiceApi.PublishMessageProperty();
       //expect(instance).to.be();
     });
 
     it('should have the property pubkey (base name: "pubkey")', function() {
       // uncomment below and update the code to test the property pubkey
-      //var instance = new PubsubServiceApi.MessageProperty();
+      //var instance = new PubsubServiceApi.PublishMessageProperty();
       //expect(instance).to.be();
     });
 
     it('should have the property signature (base name: "signature")', function() {
       // uncomment below and update the code to test the property signature
-      //var instance = new PubsubServiceApi.MessageProperty();
+      //var instance = new PubsubServiceApi.PublishMessageProperty();
       //expect(instance).to.be();
     });
 

@@ -28,7 +28,7 @@
   var instance;
 
   beforeEach(function() {
-    instance = new PubsubServiceApi.ReadResponse();
+    instance = new PubsubServiceApi.ReadMessageProperty();
   });
 
   var getProperty = function(object, getter, property) {
@@ -47,28 +47,28 @@
       object[property] = value;
   }
 
-  describe('ReadResponse', function() {
-    it('should create an instance of ReadResponse', function() {
-      // uncomment below and update the code to test ReadResponse
-      //var instance = new PubsubServiceApi.ReadResponse();
-      //expect(instance).to.be.a(PubsubServiceApi.ReadResponse);
+  describe('ReadMessageProperty', function() {
+    it('should create an instance of ReadMessageProperty', function() {
+      // uncomment below and update the code to test ReadMessageProperty
+      //var instance = new PubsubServiceApi.ReadMessageProperty();
+      //expect(instance).to.be.a(PubsubServiceApi.ReadMessageProperty);
     });
 
-    it('should have the property messagesDropped (base name: "messages-dropped")', function() {
-      // uncomment below and update the code to test the property messagesDropped
-      //var instance = new PubsubServiceApi.ReadResponse();
+    it('should have the property data (base name: "data")', function() {
+      // uncomment below and update the code to test the property data
+      //var instance = new PubsubServiceApi.ReadMessageProperty();
       //expect(instance).to.be();
     });
 
-    it('should have the property messagesRemaining (base name: "messages-remaining")', function() {
-      // uncomment below and update the code to test the property messagesRemaining
-      //var instance = new PubsubServiceApi.ReadResponse();
+    it('should have the property from (base name: "from")', function() {
+      // uncomment below and update the code to test the property from
+      //var instance = new PubsubServiceApi.ReadMessageProperty();
       //expect(instance).to.be();
     });
 
-    it('should have the property messages (base name: "messages")', function() {
-      // uncomment below and update the code to test the property messages
-      //var instance = new PubsubServiceApi.ReadResponse();
+    it('should have the property signature (base name: "signature")', function() {
+      // uncomment below and update the code to test the property signature
+      //var instance = new PubsubServiceApi.ReadMessageProperty();
       //expect(instance).to.be();
     });
 

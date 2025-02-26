@@ -18,9 +18,10 @@ import Failure from './model/Failure';
 import FailureError from './model/FailureError';
 import JoinResponse from './model/JoinResponse';
 import ListResponseInner from './model/ListResponseInner';
-import MessageProperty from './model/MessageProperty';
+import PublishMessageProperty from './model/PublishMessageProperty';
 import QueuePolicyProperty from './model/QueuePolicyProperty';
 import ReadAllResponseInner from './model/ReadAllResponseInner';
+import ReadMessageProperty from './model/ReadMessageProperty';
 import ReadResponse from './model/ReadResponse';
 import DefaultApi from './api/DefaultApi';
 
@@ -94,10 +95,10 @@ export {
     ListResponseInner,
 
     /**
-     * The MessageProperty model constructor.
-     * @property {module:model/MessageProperty}
+     * The PublishMessageProperty model constructor.
+     * @property {module:model/PublishMessageProperty}
      */
-    MessageProperty,
+    PublishMessageProperty,
 
     /**
      * The QueuePolicyProperty model constructor.
@@ -110,6 +111,12 @@ export {
      * @property {module:model/ReadAllResponseInner}
      */
     ReadAllResponseInner,
+
+    /**
+     * The ReadMessageProperty model constructor.
+     * @property {module:model/ReadMessageProperty}
+     */
+    ReadMessageProperty,
 
     /**
      * The ReadResponse model constructor.

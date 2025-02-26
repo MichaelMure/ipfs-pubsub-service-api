@@ -210,9 +210,10 @@ Class | Method | HTTP request | Description
  - [PubsubServiceApi.FailureError](docs/FailureError.md)
  - [PubsubServiceApi.JoinResponse](docs/JoinResponse.md)
  - [PubsubServiceApi.ListResponseInner](docs/ListResponseInner.md)
- - [PubsubServiceApi.MessageProperty](docs/MessageProperty.md)
+ - [PubsubServiceApi.PublishMessageProperty](docs/PublishMessageProperty.md)
  - [PubsubServiceApi.QueuePolicyProperty](docs/QueuePolicyProperty.md)
  - [PubsubServiceApi.ReadAllResponseInner](docs/ReadAllResponseInner.md)
+ - [PubsubServiceApi.ReadMessageProperty](docs/ReadMessageProperty.md)
  - [PubsubServiceApi.ReadResponse](docs/ReadResponse.md)
 
 
